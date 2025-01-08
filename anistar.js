@@ -1,34 +1,32 @@
-(function (Lampa) {
-    Lampa.Plugins.add({
-        name: 'Anistar Plugin',
-        version: '1.0.0',
-        description: 'Plugin to stream anime content from Anistar.org',
-        onStart: function () {
-            console.log('Anistar Plugin loaded successfully!');
-            Lampa.Listing.add('Anistar Anime', {
-                type: 'category',
-                content: fetchAnistarAnime()
-            });
-        }
-    });
+(function() {
+    const pluginId = 'anistar-plugin';
+    const baseUrl = 'https://anistar.org';
 
-    function fetchAnistarAnime() {
-        const animeList = [];
-        const apiUrl = 'https://anistar.org/api/get_anime_list'; // Example API endpoint
+    function initializePlugin() {
+        Lampa.Plugins.add({
+            id: pluginId,
+            name: 'Anistar',
+            description: 'Stream anime directly from Anistar.org',
+            onActivate: setupInterface
+        });
+    }
 
-        fetch(apiUrl)
+    function setupInterface() {
+        // Fetch categories and display in Lampa's UI
+        fetch(`${baseUrl}/api/categories`)
             .then(response => response.json())
             .then(data => {
-                data.forEach(anime => {
-                    animeList.push({
-                        title: anime.name,
-                        poster: anime.poster_url,
-                        link: anime.stream_url
-                    });
-                });
+                Lampa.UI.createMenu(data.categories);
             })
-            .catch(error => console.error('Error fetching anime list:', error));
-
-        return animeList;
+            .catch(error => {
+                console.error('Failed to load categories:', error);
+            });
     }
-})(window.Lampa || {});
+
+    function playAnime(animeId, episodeId) {
+        const streamUrl = `${baseUrl}/api/stream/${animeId}/${episodeId}`;
+        Lampa.Player.play(streamUrl);
+    }
+
+    initializePlugin();
+})();
