@@ -1,8 +1,0 @@
-{
-  "id": "my-lampa-plugin",
-  "name": "My Lampa Plugin",
-  "version": "1.0.0",
-  "description": "A custom plugin for Lampa TV",
-  "author": "Your Name",
-  "main": "plugin.js"
-}
