@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IPTV Player mit HLS und Playlist-Speicherung</title>
+    <title>IPTV Player mit Sortierung und Suche</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -15,7 +15,7 @@
             background-color: #f4f4f4;
         }
         .player-container {
-            width: 80%;
+            width: 90%;
             max-width: 800px;
             text-align: center;
             background: #ffffff;
@@ -23,8 +23,8 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-        input[type="text"], input[type="file"] {
-            width: 80%;
+        input[type="text"], input[type="file"], .search-input {
+            width: 100%;
             padding: 10px;
             border: 1px solid #ccc;
             border-radius: 4px;
@@ -38,14 +38,14 @@
             cursor: pointer;
         }
         button#play { background-color: #4CAF50; color: white; }
-        button#pause, button#stop { background-color: #f44336; color: white; }
+        button#pause, button#stop, button#clearPlaylist, button#sortFavorites { background-color: #f44336; color: white; }
         video {
             width: 100%;
             height: auto;
             margin-top: 20px;
             border-radius: 8px;
         }
-        .playlist {
+        .playlist, .favorites {
             margin-top: 20px;
             max-height: 200px;
             overflow-y: auto;
@@ -54,11 +54,14 @@
             padding: 10px;
             text-align: left;
         }
-        .playlist-item {
+        .playlist-item, .favorite-item {
             padding: 5px;
             cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
         }
-        .playlist-item:hover {
+        .playlist-item:hover, .favorite-item:hover {
             background-color: #f0f0f0;
         }
     </style>
@@ -67,15 +70,24 @@
 <body>
 
     <div class="player-container">
-        <h1>IPTV Player mit HLS und Playlist-Speicherung</h1>
+        <h1>IPTV Player mit Sortierung und Suche</h1>
         <input type="text" id="streamUrl" placeholder="Gib die IPTV-URL ein">
         <div>
             <button id="play">Abspielen</button>
             <button id="pause">Pause</button>
             <button id="stop">Stop</button>
+            <button id="clearPlaylist">Playlist löschen</button>
         </div>
         <input type="file" id="m3uFile" accept=".m3u">
+        <div class="category-selector">
+            <label for="categorySelect">Kategorie:</label>
+            <select id="categorySelect"></select>
+        </div>
+        <input type="text" id="searchInput" class="search-input" placeholder="Suche Kanäle...">
         <div class="playlist" id="playlistContainer"></div>
+        <h3>Favoriten</h3>
+        <button id="sortFavorites">Favoriten sortieren</button>
+        <div class="favorites" id="favoritesContainer"></div>
         <video id="videoPlayer" controls></video>
     </div>
 
@@ -85,12 +97,21 @@
         const playButton = document.getElementById('play');
         const pauseButton = document.getElementById('pause');
         const stopButton = document.getElementById('stop');
+        const clearPlaylistButton = document.getElementById('clearPlaylist');
+        const sortFavoritesButton = document.getElementById('sortFavorites');
         const m3uFileInput = document.getElementById('m3uFile');
         const playlistContainer = document.getElementById('playlistContainer');
+        const favoritesContainer = document.getElementById('favoritesContainer');
+        const categorySelect = document.getElementById('categorySelect');
+        const searchInput = document.getElementById('searchInput');
 
         let playlist = JSON.parse(localStorage.getItem('playlist')) || [];
+        let favorites = JSON.parse(localStorage.getItem('favorites')) || [];
         let currentChannelIndex = parseInt(localStorage.getItem('currentChannelIndex')) || 0;
+        let categories = [];
 
+        displayFavorites();
+        displayCategories();
         displayPlaylist();
 
         playButton.addEventListener('click', () => {
@@ -106,6 +127,26 @@
             videoPlayer.currentTime = 0;
         });
 
+        clearPlaylistButton.addEventListener('click', () => {
+            playlist = [];
+            currentChannelIndex = 0;
+            localStorage.removeItem('playlist');
+            localStorage.removeItem('currentChannelIndex');
+            displayPlaylist();
+            alert('Playlist wurde gelöscht.');
+        });
+
+        sortFavoritesButton.addEventListener('click', () => {
+            favorites.sort((a, b) => a.url.localeCompare(b.url));
+            localStorage.setItem('favorites', JSON.stringify(favorites));
+            displayFavorites();
+        });
+
+        searchInput.addEventListener('input', () => {
+            const query = searchInput.value.toLowerCase();
+            displayPlaylist(query);
+        });
+
         m3uFileInput.addEventListener('change', (event) => {
             const file = event.target.files[0];
             if (file) {
@@ -118,23 +159,85 @@
         });
 
         function parseM3UFile(content) {
-            playlist = content.split('\n').filter(line => line && !line.startsWith('#'));
+            const lines = content.split('\n');
+            playlist = [];
+            categories = [];
+            let currentCategory = 'Unkategorisiert';
+
+            lines.forEach(line => {
+                if (line.startsWith('#EXTINF')) {
+                    const categoryMatch = line.match(/group-title="([^"]+)"/);
+                    if (categoryMatch) {
+                        currentCategory = categoryMatch[1];
+                        if (!categories.includes(currentCategory)) {
+                            categories.push(currentCategory);
+                        }
+                    }
+                } else if (line && !line.startsWith('#')) {
+                    playlist.push({ url: line, category: currentCategory });
+                }
+            });
+
             localStorage.setItem('playlist', JSON.stringify(playlist));
+            displayCategories();
             displayPlaylist();
         }
 
-        function displayPlaylist() {
+        function displayCategories() {
+            categorySelect.innerHTML = '';
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category;
+                option.textContent = category;
+                categorySelect.appendChild(option);
+            });
+        }
+
+        function displayPlaylist(query = '') {
+            const selectedCategory = categorySelect.value || 'Unkategorisiert';
+            const filteredPlaylist = playlist.filter(item =>
+                item.category === selectedCategory &&
+                (item.url.toLowerCase().includes(query) || query === '')
+            );
+
             playlistContainer.innerHTML = '';
-            playlist.forEach((url, index) => {
-                const item = document.createElement('div');
-                item.className = 'playlist-item';
-                item.textContent = `Kanal ${index + 1}: ${url}`;
-                item.addEventListener('click', () => {
+            filteredPlaylist.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'playlist-item';
+                div.textContent = `Kanal ${index + 1}: ${item.url}`;
+                div.addEventListener('click', () => {
                     currentChannelIndex = index;
                     localStorage.setItem('currentChannelIndex', currentChannelIndex);
-                    playStream(url);
+                    playStream(item.url);
                 });
-                playlistContainer.appendChild(item);
+                const favButton = document.createElement('button');
+                favButton.textContent = '☆';
+                favButton.addEventListener('click', () => {
+                    addFavorite(item);
+                });
+                div.appendChild(favButton);
+                playlistContainer.appendChild(div);
+            });
+        }
+
+        function addFavorite(item) {
+            if (!favorites.some(fav => fav.url === item.url)) {
+                favorites.push(item);
+                localStorage.setItem('favorites', JSON.stringify(favorites));
+                displayFavorites();
+            }
+        }
+
+        function displayFavorites() {
+            favoritesContainer.innerHTML = '';
+            favorites.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'favorite-item';
+                div.textContent = `Favorit ${index + 1}: ${item.url}`;
+                div.addEventListener('click', () => {
+                    playStream(item.url);
+                });
+                favoritesContainer.appendChild(div);
             });
         }
 
@@ -160,16 +263,6 @@
             } else {
                 alert('Bitte gib eine gültige URL ein.');
             }
-        }
-
-        videoPlayer.addEventListener('ended', () => {
-            playNextChannel();
-        });
-
-        function playNextChannel() {
-            currentChannelIndex = (currentChannelIndex + 1) % playlist.length;
-            localStorage.setItem('currentChannelIndex', currentChannelIndex);
-            playStream(playlist[currentChannelIndex]);
         }
     </script>
 
