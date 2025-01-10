@@ -5,57 +5,53 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Ukrainisch-Deutsch Lernseite</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 20px; }
-        .flashcard { border: 1px solid #ddd; padding: 20px; margin: 20px auto; width: 300px; cursor: pointer; }
-        .quiz { margin: 20px auto; width: 300px; }
+        body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 20px; background-color: #f4f4f9; }
+        .flashcard { border: 1px solid #ddd; padding: 20px; margin: 20px auto; width: 300px; cursor: pointer; background-color: #ffffff; }
     </style>
 </head>
 <body>
 
     <h1>Ukrainisch auf Deutsch lernen</h1>
-
     <h2>Flashcards</h2>
-    <div id="flashcard" class="flashcard">Натисни, щоб побачити переклад</div>
-
-    <h2>Quiz</h2>
-    <div class="quiz">
-        <p>Was bedeutet "Дім" auf Deutsch?</p>
-        <button onclick="checkAnswer('Haus')">Haus</button>
-        <button onclick="checkAnswer('Auto')">Auto</button>
-        <button onclick="checkAnswer('Baum')">Baum</button>
-        <p id="quiz-result"></p>
-    </div>
+    <div id="flashcard" class="flashcard">Wird geladen...</div>
 
     <script>
-        // Flashcards Daten
-        const flashcards = [
-            { ua: 'Дім', de: 'Haus' },
-            { ua: 'Книга', de: 'Buch' },
-            { ua: 'Сонце', de: 'Sonne' }
-        ];
-        
+        let flashcards = [];
         let currentIndex = 0;
         const flashcardElement = document.getElementById('flashcard');
 
+        // Lade die Vokabeln aus der JSON-Datei
+        fetch('vokabeln.json')
+            .then(response => response.json())
+            .then(data => {
+                flashcards = data;
+                showFlashcard();
+            })
+            .catch(error => console.error('Fehler beim Laden der Vokabeln:', error));
+
+        // Zeigt die aktuelle Flashcard an
+        function showFlashcard() {
+            if (flashcards.length === 0) return;
+            flashcardElement.innerText = flashcards[currentIndex].ua;
+        }
+
+        // Wechsel zwischen Ukrainisch und Deutsch beim Klicken
         flashcardElement.addEventListener('click', () => {
             const currentCard = flashcards[currentIndex];
             if (flashcardElement.innerText === currentCard.ua) {
                 flashcardElement.innerText = currentCard.de;
             } else {
                 flashcardElement.innerText = currentCard.ua;
+                playAudio(currentCard.ua);
                 currentIndex = (currentIndex + 1) % flashcards.length;
             }
         });
 
-        // Quiz-Funktion
-        function checkAnswer(answer) {
-            const correctAnswer = 'Haus';
-            const resultElement = document.getElementById('quiz-result');
-            if (answer === correctAnswer) {
-                resultElement.innerText = 'Richtig!';
-            } else {
-                resultElement.innerText = 'Falsch, versuche es noch einmal.';
-            }
+        // Funktion zur Sprachausgabe
+        function playAudio(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = 'uk-UA'; // Ukrainische Sprache
+            speechSynthesis.speak(utterance);
         }
     </script>
 
