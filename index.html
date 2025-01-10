@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>IPTV Player</title>
+    <title>IPTV Player mit HLS und Playlist-Speicherung</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -23,7 +23,7 @@
             border-radius: 8px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
         }
-        input[type="text"] {
+        input[type="text"], input[type="file"] {
             width: 80%;
             padding: 10px;
             border: 1px solid #ccc;
@@ -45,18 +45,37 @@
             margin-top: 20px;
             border-radius: 8px;
         }
+        .playlist {
+            margin-top: 20px;
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 10px;
+            text-align: left;
+        }
+        .playlist-item {
+            padding: 5px;
+            cursor: pointer;
+        }
+        .playlist-item:hover {
+            background-color: #f0f0f0;
+        }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/hls.js@latest"></script>
 </head>
 <body>
 
     <div class="player-container">
-        <h1>IPTV Player</h1>
+        <h1>IPTV Player mit HLS und Playlist-Speicherung</h1>
         <input type="text" id="streamUrl" placeholder="Gib die IPTV-URL ein">
         <div>
             <button id="play">Abspielen</button>
             <button id="pause">Pause</button>
             <button id="stop">Stop</button>
         </div>
+        <input type="file" id="m3uFile" accept=".m3u">
+        <div class="playlist" id="playlistContainer"></div>
         <video id="videoPlayer" controls></video>
     </div>
 
@@ -66,32 +85,92 @@
         const playButton = document.getElementById('play');
         const pauseButton = document.getElementById('pause');
         const stopButton = document.getElementById('stop');
+        const m3uFileInput = document.getElementById('m3uFile');
+        const playlistContainer = document.getElementById('playlistContainer');
 
-        // Abspielen des Streams
+        let playlist = JSON.parse(localStorage.getItem('playlist')) || [];
+        let currentChannelIndex = parseInt(localStorage.getItem('currentChannelIndex')) || 0;
+
+        displayPlaylist();
+
         playButton.addEventListener('click', () => {
-            const url = streamUrlInput.value.trim();
-            if (url) {
-                videoPlayer.src = url;
-                videoPlayer.play().catch(error => {
-                    alert('Fehler beim Abspielen des Streams: ' + error.message);
-                });
-            } else {
-                alert('Bitte gib eine gültige URL ein.');
-            }
+            playStream(streamUrlInput.value.trim());
         });
 
-        // Pause des Streams
         pauseButton.addEventListener('click', () => {
-            if (!videoPlayer.paused) {
-                videoPlayer.pause();
-            }
+            if (!videoPlayer.paused) videoPlayer.pause();
         });
 
-        // Stoppen des Streams
         stopButton.addEventListener('click', () => {
             videoPlayer.pause();
             videoPlayer.currentTime = 0;
         });
+
+        m3uFileInput.addEventListener('change', (event) => {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (e) => {
+                    parseM3UFile(e.target.result);
+                };
+                reader.readAsText(file);
+            }
+        });
+
+        function parseM3UFile(content) {
+            playlist = content.split('\n').filter(line => line && !line.startsWith('#'));
+            localStorage.setItem('playlist', JSON.stringify(playlist));
+            displayPlaylist();
+        }
+
+        function displayPlaylist() {
+            playlistContainer.innerHTML = '';
+            playlist.forEach((url, index) => {
+                const item = document.createElement('div');
+                item.className = 'playlist-item';
+                item.textContent = `Kanal ${index + 1}: ${url}`;
+                item.addEventListener('click', () => {
+                    currentChannelIndex = index;
+                    localStorage.setItem('currentChannelIndex', currentChannelIndex);
+                    playStream(url);
+                });
+                playlistContainer.appendChild(item);
+            });
+        }
+
+        function playStream(url) {
+            if (url) {
+                if (Hls.isSupported()) {
+                    const hls = new Hls();
+                    hls.loadSource(url);
+                    hls.attachMedia(videoPlayer);
+                    hls.on(Hls.Events.MANIFEST_PARSED, () => {
+                        videoPlayer.play().catch(error => {
+                            alert('Fehler beim Abspielen des Streams: ' + error.message);
+                        });
+                    });
+                } else if (videoPlayer.canPlayType('application/vnd.apple.mpegurl')) {
+                    videoPlayer.src = url;
+                    videoPlayer.play().catch(error => {
+                        alert('Fehler beim Abspielen des Streams: ' + error.message);
+                    });
+                } else {
+                    alert('HLS wird von deinem Browser nicht unterstützt.');
+                }
+            } else {
+                alert('Bitte gib eine gültige URL ein.');
+            }
+        }
+
+        videoPlayer.addEventListener('ended', () => {
+            playNextChannel();
+        });
+
+        function playNextChannel() {
+            currentChannelIndex = (currentChannelIndex + 1) % playlist.length;
+            localStorage.setItem('currentChannelIndex', currentChannelIndex);
+            playStream(playlist[currentChannelIndex]);
+        }
     </script>
 
 </body>
