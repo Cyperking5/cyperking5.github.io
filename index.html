@@ -3,103 +3,103 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ukrainisch-Deutsch Lernseite</title>
+    <title>Учите немецкий язык</title>
     <style>
-        body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 20px; background-color: #f4f4f9; }
-        .flashcard, .quiz-container { border: 1px solid #ddd; padding: 20px; margin: 20px auto; width: 300px; background-color: #ffffff; }
-        button { padding: 10px 20px; margin: 5px; font-size: 16px; cursor: pointer; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+        }
+        header {
+            background-color: #007acc;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        nav {
+            display: flex;
+            justify-content: center;
+            background-color: #333;
+        }
+        nav a {
+            color: white;
+            padding: 14px 20px;
+            text-decoration: none;
+            text-transform: uppercase;
+        }
+        nav a:hover {
+            background-color: #555;
+        }
+        .container {
+            padding: 20px;
+        }
+        .section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 <body>
+    <header>
+        <h1>Учите немецкий язык онлайн</h1>
+        <p>Расширяйте свои знания и практикуйтесь каждый день!</p>
+    </header>
+    
+    <nav>
+        <a href="#dictionary">Словарь</a>
+        <a href="#exercises">Упражнения</a>
+        <a href="#grammar">Грамматика</a>
+        <a href="#tests">Тесты</a>
+        <a href="#stats">Статистика</a>
+    </nav>
 
-    <h1>Ukrainisch auf Deutsch lernen</h1>
+    <div class="container">
+        <div id="dictionary" class="section">
+            <h2>Словарь</h2>
+            <p>Пополняйте свой словарный запас.</p>
+            <ul>
+                <li>Hund – собака</li>
+                <li>Katze – кошка</li>
+                <li>Haus – дом</li>
+                <li>Auto – автомобиль</li>
+            </ul>
+        </div>
 
-    <h2>Flashcards</h2>
-    <div id="flashcard" class="flashcard">Wird geladen...</div>
+        <div id="exercises" class="section">
+            <h2>Упражнения</h2>
+            <p>Попробуйте выполнить задания:</p>
+            <button onclick="startExercise()">Начать упражнение</button>
+        </div>
 
-    <h2>Quiz</h2>
-    <div id="quiz-container" class="quiz-container">Wird geladen...</div>
+        <div id="grammar" class="section">
+            <h2>Грамматика</h2>
+            <p>Изучайте правила немецкой грамматики.</p>
+        </div>
+
+        <div id="tests" class="section">
+            <h2>Тесты</h2>
+            <p>Проверьте свои знания.</p>
+            <button onclick="startTest()">Пройти тест</button>
+        </div>
+
+        <div id="stats" class="section">
+            <h2>Статистика</h2>
+            <p>Следите за своим прогрессом.</p>
+        </div>
+    </div>
 
     <script>
-        let flashcards = [];
-        let currentIndex = 0;
-
-        const flashcardElement = document.getElementById('flashcard');
-        const quizContainer = document.getElementById('quiz-container');
-
-        // Lade die Vokabeln aus der JSON-Datei
-        fetch('vokabeln.json')
-            .then(response => response.json())
-            .then(data => {
-                flashcards = data;
-                showFlashcard();
-                generateQuiz();
-            })
-            .catch(error => console.error('Fehler beim Laden der Vokabeln:', error));
-
-        // Zeigt die aktuelle Flashcard an
-        function showFlashcard() {
-            if (flashcards.length === 0) return;
-            flashcardElement.innerText = flashcards[currentIndex].ua;
+        function startExercise() {
+            alert('Упражнение началось!');
         }
 
-        // Wechsel zwischen Ukrainisch und Deutsch beim Klicken
-        flashcardElement.addEventListener('click', () => {
-            const currentCard = flashcards[currentIndex];
-            if (flashcardElement.innerText === currentCard.ua) {
-                flashcardElement.innerText = currentCard.de;
-            } else {
-                flashcardElement.innerText = currentCard.ua;
-                playAudio(currentCard.ua);
-                currentIndex = (currentIndex + 1) % flashcards.length;
-            }
-        });
-
-        // Funktion zur Sprachausgabe
-        function playAudio(text) {
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = 'uk-UA'; // Ukrainische Sprache
-            speechSynthesis.speak(utterance);
-        }
-
-        // Generiert ein Quiz mit zufälligen Fragen und Antwortoptionen
-        function generateQuiz() {
-            if (flashcards.length < 3) return; // Sicherstellen, dass genug Vokabeln vorhanden sind
-
-            // Zufällige Frage auswählen
-            const questionIndex = Math.floor(Math.random() * flashcards.length);
-            const correctAnswer = flashcards[questionIndex].de;
-
-            // Antwortoptionen generieren (1 richtige + 2 falsche)
-            let options = [correctAnswer];
-            while (options.length < 3) {
-                const randomOption = flashcards[Math.floor(Math.random() * flashcards.length)].de;
-                if (!options.includes(randomOption)) {
-                    options.push(randomOption);
-                }
-            }
-
-            // Optionen mischen
-            options = options.sort(() => Math.random() - 0.5);
-
-            // Quiz HTML erstellen
-            quizContainer.innerHTML = `
-                <p>Was bedeutet "${flashcards[questionIndex].ua}" auf Deutsch?</p>
-                ${options.map(option => `<button onclick="checkAnswer('${option}', '${correctAnswer}')">${option}</button>`).join('')}
-                <p id="quiz-result"></p>
-            `;
-        }
-
-        // Überprüft die Antwort und zeigt das Ergebnis an
-        function checkAnswer(selectedAnswer, correctAnswer) {
-            const resultElement = document.getElementById('quiz-result');
-            if (selectedAnswer === correctAnswer) {
-                resultElement.innerText = 'Richtig!';
-            } else {
-                resultElement.innerText = 'Falsch, versuche es noch einmal.';
-            }
+        function startTest() {
+            alert('Тест начался!');
         }
     </script>
-
 </body>
 </html>
