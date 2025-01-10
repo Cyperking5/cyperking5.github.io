@@ -1,92 +1,98 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GBA Emulator mit Speicherfunktion</title>
-  <script src="gba.js"></script> <!-- GBA.js hier einbinden -->
-  <style>
-    canvas {
-      border: 1px solid black;
-      display: block;
-      margin: 20px auto;
-    }
-    #controls {
-      text-align: center;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IPTV Player</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+        .player-container {
+            width: 80%;
+            max-width: 800px;
+            text-align: center;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        input[type="text"] {
+            width: 80%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+        button {
+            padding: 10px 15px;
+            margin: 5px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button#play { background-color: #4CAF50; color: white; }
+        button#pause, button#stop { background-color: #f44336; color: white; }
+        video {
+            width: 100%;
+            height: auto;
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+    </style>
 </head>
 <body>
-  <h1 style="text-align:center;">GBA Emulator</h1>
-  <div id="controls">
-    <input type="file" id="romUploader" accept=".gba" />
-    <button id="saveState">Spielstand speichern</button>
-    <input type="file" id="loadState" accept=".sav" />
-  </div>
-  <canvas id="screen" width="240" height="160"></canvas>
 
-  <script>
-    const emulator = new GameBoyAdvance();
-    emulator.setCanvas(document.getElementById('screen'));
+    <div class="player-container">
+        <h1>IPTV Player</h1>
+        <input type="text" id="streamUrl" placeholder="Gib die IPTV-URL ein">
+        <div>
+            <button id="play">Abspielen</button>
+            <button id="pause">Pause</button>
+            <button id="stop">Stop</button>
+        </div>
+        <video id="videoPlayer" controls></video>
+    </div>
 
-    // ROM hochladen und starten
-    document.getElementById('romUploader').addEventListener('change', (event) => {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          emulator.loadRomFromBuffer(e.target.result);
-          emulator.run();
-        };
-        reader.readAsArrayBuffer(file);
-      }
-    });
+    <script>
+        const videoPlayer = document.getElementById('videoPlayer');
+        const streamUrlInput = document.getElementById('streamUrl');
+        const playButton = document.getElementById('play');
+        const pauseButton = document.getElementById('pause');
+        const stopButton = document.getElementById('stop');
 
-    // Spielstand speichern
-    document.getElementById('saveState').addEventListener('click', () => {
-      const saveData = emulator.saveState();
-      const blob = new Blob([saveData], { type: 'application/octet-stream' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = 'gba_save.sav';
-      a.click();
-      URL.revokeObjectURL(url);
-    });
+        // Abspielen des Streams
+        playButton.addEventListener('click', () => {
+            const url = streamUrlInput.value.trim();
+            if (url) {
+                videoPlayer.src = url;
+                videoPlayer.play().catch(error => {
+                    alert('Fehler beim Abspielen des Streams: ' + error.message);
+                });
+            } else {
+                alert('Bitte gib eine gültige URL ein.');
+            }
+        });
 
-    // Spielstand laden
-    document.getElementById('loadState').addEventListener('change', (event) => {
-      const file = event.target.files[0];
-      if (file) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          emulator.loadState(e.target.result);
-        };
-        reader.readAsArrayBuffer(file);
-      }
-    });
+        // Pause des Streams
+        pauseButton.addEventListener('click', () => {
+            if (!videoPlayer.paused) {
+                videoPlayer.pause();
+            }
+        });
 
-    // Tastenbelegung (Keydown & Keyup Events)
-    const keyMap = {
-      88: 'A',    // X-Taste -> A
-      90: 'B',    // Z-Taste -> B
-      13: 'START', // Enter -> Start
-      16: 'SELECT', // Shift -> Select
-      37: 'LEFT',  // Pfeil links -> Links
-      38: 'UP',    // Pfeil hoch -> Hoch
-      39: 'RIGHT', // Pfeil rechts -> Rechts
-      40: 'DOWN'   // Pfeil runter -> Runter
-    };
+        // Stoppen des Streams
+        stopButton.addEventListener('click', () => {
+            videoPlayer.pause();
+            videoPlayer.currentTime = 0;
+        });
+    </script>
 
-    window.addEventListener('keydown', (event) => {
-      const key = keyMap[event.keyCode];
-      if (key) emulator.keyDown(key);
-    });
-
-    window.addEventListener('keyup', (event) => {
-      const key = keyMap[event.keyCode];
-      if (key) emulator.keyUp(key);
-    });
-  </script>
 </body>
 </html>
