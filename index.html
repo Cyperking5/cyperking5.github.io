@@ -6,19 +6,26 @@
     <title>Ukrainisch-Deutsch Lernseite</title>
     <style>
         body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 20px; background-color: #f4f4f9; }
-        .flashcard { border: 1px solid #ddd; padding: 20px; margin: 20px auto; width: 300px; cursor: pointer; background-color: #ffffff; }
+        .flashcard, .quiz-container { border: 1px solid #ddd; padding: 20px; margin: 20px auto; width: 300px; background-color: #ffffff; }
+        button { padding: 10px 20px; margin: 5px; font-size: 16px; cursor: pointer; }
     </style>
 </head>
 <body>
 
     <h1>Ukrainisch auf Deutsch lernen</h1>
+
     <h2>Flashcards</h2>
     <div id="flashcard" class="flashcard">Wird geladen...</div>
+
+    <h2>Quiz</h2>
+    <div id="quiz-container" class="quiz-container">Wird geladen...</div>
 
     <script>
         let flashcards = [];
         let currentIndex = 0;
+
         const flashcardElement = document.getElementById('flashcard');
+        const quizContainer = document.getElementById('quiz-container');
 
         // Lade die Vokabeln aus der JSON-Datei
         fetch('vokabeln.json')
@@ -26,6 +33,7 @@
             .then(data => {
                 flashcards = data;
                 showFlashcard();
+                generateQuiz();
             })
             .catch(error => console.error('Fehler beim Laden der Vokabeln:', error));
 
@@ -52,6 +60,44 @@
             const utterance = new SpeechSynthesisUtterance(text);
             utterance.lang = 'uk-UA'; // Ukrainische Sprache
             speechSynthesis.speak(utterance);
+        }
+
+        // Generiert ein Quiz mit zufälligen Fragen und Antwortoptionen
+        function generateQuiz() {
+            if (flashcards.length < 3) return; // Sicherstellen, dass genug Vokabeln vorhanden sind
+
+            // Zufällige Frage auswählen
+            const questionIndex = Math.floor(Math.random() * flashcards.length);
+            const correctAnswer = flashcards[questionIndex].de;
+
+            // Antwortoptionen generieren (1 richtige + 2 falsche)
+            let options = [correctAnswer];
+            while (options.length < 3) {
+                const randomOption = flashcards[Math.floor(Math.random() * flashcards.length)].de;
+                if (!options.includes(randomOption)) {
+                    options.push(randomOption);
+                }
+            }
+
+            // Optionen mischen
+            options = options.sort(() => Math.random() - 0.5);
+
+            // Quiz HTML erstellen
+            quizContainer.innerHTML = `
+                <p>Was bedeutet "${flashcards[questionIndex].ua}" auf Deutsch?</p>
+                ${options.map(option => `<button onclick="checkAnswer('${option}', '${correctAnswer}')">${option}</button>`).join('')}
+                <p id="quiz-result"></p>
+            `;
+        }
+
+        // Überprüft die Antwort und zeigt das Ergebnis an
+        function checkAnswer(selectedAnswer, correctAnswer) {
+            const resultElement = document.getElementById('quiz-result');
+            if (selectedAnswer === correctAnswer) {
+                resultElement.innerText = 'Richtig!';
+            } else {
+                resultElement.innerText = 'Falsch, versuche es noch einmal.';
+            }
         }
     </script>
 
