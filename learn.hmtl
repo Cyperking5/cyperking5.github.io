@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ukrainisch-Deutsch Lernseite</title>
+    <style>
+        body { font-family: Arial, sans-serif; text-align: center; margin: 0; padding: 20px; }
+        .flashcard { border: 1px solid #ddd; padding: 20px; margin: 20px auto; width: 300px; cursor: pointer; }
+        .quiz { margin: 20px auto; width: 300px; }
+    </style>
+</head>
+<body>
+
+    <h1>Ukrainisch auf Deutsch lernen</h1>
+
+    <h2>Flashcards</h2>
+    <div id="flashcard" class="flashcard">Натисни, щоб побачити переклад</div>
+
+    <h2>Quiz</h2>
+    <div class="quiz">
+        <p>Was bedeutet "Дім" auf Deutsch?</p>
+        <button onclick="checkAnswer('Haus')">Haus</button>
+        <button onclick="checkAnswer('Auto')">Auto</button>
+        <button onclick="checkAnswer('Baum')">Baum</button>
+        <p id="quiz-result"></p>
+    </div>
+
+    <script>
+        // Flashcards Daten
+        const flashcards = [
+            { ua: 'Дім', de: 'Haus' },
+            { ua: 'Книга', de: 'Buch' },
+            { ua: 'Сонце', de: 'Sonne' }
+        ];
+        
+        let currentIndex = 0;
+        const flashcardElement = document.getElementById('flashcard');
+
+        flashcardElement.addEventListener('click', () => {
+            const currentCard = flashcards[currentIndex];
+            if (flashcardElement.innerText === currentCard.ua) {
+                flashcardElement.innerText = currentCard.de;
+            } else {
+                flashcardElement.innerText = currentCard.ua;
+                currentIndex = (currentIndex + 1) % flashcards.length;
+            }
+        });
+
+        // Quiz-Funktion
+        function checkAnswer(answer) {
+            const correctAnswer = 'Haus';
+            const resultElement = document.getElementById('quiz-result');
+            if (answer === correctAnswer) {
+                resultElement.innerText = 'Richtig!';
+            } else {
+                resultElement.innerText = 'Falsch, versuche es noch einmal.';
+            }
+        }
+    </script>
+
+</body>
+</html>
