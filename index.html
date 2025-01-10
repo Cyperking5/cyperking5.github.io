@@ -1,130 +1,92 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Учите немецкий язык</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 0;
-            background-color: #f4f4f4;
-        }
-        header {
-            background-color: #007acc;
-            color: white;
-            padding: 20px;
-            text-align: center;
-        }
-        nav {
-            display: flex;
-            justify-content: center;
-            background-color: #333;
-        }
-        nav a {
-            color: white;
-            padding: 14px 20px;
-            text-decoration: none;
-            text-transform: uppercase;
-        }
-        nav a:hover {
-            background-color: #555;
-        }
-        .container {
-            padding: 20px;
-        }
-        .section {
-            margin-bottom: 30px;
-            padding: 20px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GBA Emulator mit Speicherfunktion</title>
+  <script src="gba.js"></script> <!-- GBA.js hier einbinden -->
+  <style>
+    canvas {
+      border: 1px solid black;
+      display: block;
+      margin: 20px auto;
+    }
+    #controls {
+      text-align: center;
+    }
+  </style>
 </head>
 <body>
-    <header>
-        <h1>Учите немецкий язык онлайн</h1>
-        <p>Расширяйте свои знания и практикуйтесь каждый день!</p>
-    </header>
-    
-    <nav>
-        <a href="#dictionary">Словарь</a>
-        <a href="#exercises">Упражнения</a>
-        <a href="#grammar">Грамматика</a>
-        <a href="#tests">Тесты</a>
-        <a href="#stats">Статистика</a>
-    </nav>
+  <h1 style="text-align:center;">GBA Emulator</h1>
+  <div id="controls">
+    <input type="file" id="romUploader" accept=".gba" />
+    <button id="saveState">Spielstand speichern</button>
+    <input type="file" id="loadState" accept=".sav" />
+  </div>
+  <canvas id="screen" width="240" height="160"></canvas>
 
-    <div class="container">
-        <div id="dictionary" class="section">
-            <h2>Словарь</h2>
-            <p>Пополняйте свой словарный запас.</p>
-            <div id="word-list">
-                <!-- Слова будут загружены динамически -->
-            </div>
-        </div>
+  <script>
+    const emulator = new GameBoyAdvance();
+    emulator.setCanvas(document.getElementById('screen'));
 
-        <div id="exercises" class="section">
-            <h2>Упражнения</h2>
-            <p>Попробуйте выполнить задания:</p>
-            <button onclick="startExercise()">Начать упражнение</button>
-        </div>
+    // ROM hochladen und starten
+    document.getElementById('romUploader').addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          emulator.loadRomFromBuffer(e.target.result);
+          emulator.run();
+        };
+        reader.readAsArrayBuffer(file);
+      }
+    });
 
-        <div id="grammar" class="section">
-            <h2>Грамматика</h2>
-            <p>Изучайте правила немецкой грамматики.</p>
-        </div>
+    // Spielstand speichern
+    document.getElementById('saveState').addEventListener('click', () => {
+      const saveData = emulator.saveState();
+      const blob = new Blob([saveData], { type: 'application/octet-stream' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'gba_save.sav';
+      a.click();
+      URL.revokeObjectURL(url);
+    });
 
-        <div id="tests" class="section">
-            <h2>Тесты</h2>
-            <p>Проверьте свои знания.</p>
-            <button onclick="startTest()">Пройти тест</button>
-        </div>
+    // Spielstand laden
+    document.getElementById('loadState').addEventListener('change', (event) => {
+      const file = event.target.files[0];
+      if (file) {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          emulator.loadState(e.target.result);
+        };
+        reader.readAsArrayBuffer(file);
+      }
+    });
 
-        <div id="stats" class="section">
-            <h2>Статистика</h2>
-            <p>Следите за своим прогрессом.</p>
-        </div>
-    </div>
+    // Tastenbelegung (Keydown & Keyup Events)
+    const keyMap = {
+      88: 'A',    // X-Taste -> A
+      90: 'B',    // Z-Taste -> B
+      13: 'START', // Enter -> Start
+      16: 'SELECT', // Shift -> Select
+      37: 'LEFT',  // Pfeil links -> Links
+      38: 'UP',    // Pfeil hoch -> Hoch
+      39: 'RIGHT', // Pfeil rechts -> Rechts
+      40: 'DOWN'   // Pfeil runter -> Runter
+    };
 
-    <script>
-        // Пример списка из 1000 слов
-        const words = [
-            {"de": "Haus", "ru": "дом"},
-            {"de": "Baum", "ru": "дерево"},
-            {"de": "Auto", "ru": "автомобиль"},
-            {"de": "Hund", "ru": "собака"},
-            {"de": "Katze", "ru": "кошка"},
-            {"de": "Wasser", "ru": "вода"},
-            {"de": "Brot", "ru": "хлеб"},
-            {"de": "Freund", "ru": "друг"},
-            {"de": "Schule", "ru": "школа"},
-            {"de": "Buch", "ru": "книга"},
-            // Добавить еще 990 слов...
-        ];
+    window.addEventListener('keydown', (event) => {
+      const key = keyMap[event.keyCode];
+      if (key) emulator.keyDown(key);
+    });
 
-        // Загрузка слов на страницу
-        function loadWords() {
-            const wordList = document.getElementById('word-list');
-            words.forEach(word => {
-                const wordItem = document.createElement('p');
-                wordItem.textContent = `${word.de} – ${word.ru}`;
-                wordList.appendChild(wordItem);
-            });
-        }
-
-        // Запуск функции после загрузки страницы
-        window.onload = loadWords;
-
-        function startExercise() {
-            alert('Упражнение началось!');
-        }
-
-        function startTest() {
-            alert('Тест начался!');
-        }
-    </script>
+    window.addEventListener('keyup', (event) => {
+      const key = keyMap[event.keyCode];
+      if (key) emulator.keyUp(key);
+    });
+  </script>
 </body>
 </html>
