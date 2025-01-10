@@ -61,12 +61,9 @@
         <div id="dictionary" class="section">
             <h2>Словарь</h2>
             <p>Пополняйте свой словарный запас.</p>
-            <ul>
-                <li>Hund – собака</li>
-                <li>Katze – кошка</li>
-                <li>Haus – дом</li>
-                <li>Auto – автомобиль</li>
-            </ul>
+            <div id="word-list">
+                <!-- Слова будут загружены динамически -->
+            </div>
         </div>
 
         <div id="exercises" class="section">
@@ -93,6 +90,34 @@
     </div>
 
     <script>
+        // Пример списка из 1000 слов
+        const words = [
+            {"de": "Haus", "ru": "дом"},
+            {"de": "Baum", "ru": "дерево"},
+            {"de": "Auto", "ru": "автомобиль"},
+            {"de": "Hund", "ru": "собака"},
+            {"de": "Katze", "ru": "кошка"},
+            {"de": "Wasser", "ru": "вода"},
+            {"de": "Brot", "ru": "хлеб"},
+            {"de": "Freund", "ru": "друг"},
+            {"de": "Schule", "ru": "школа"},
+            {"de": "Buch", "ru": "книга"},
+            // Добавить еще 990 слов...
+        ];
+
+        // Загрузка слов на страницу
+        function loadWords() {
+            const wordList = document.getElementById('word-list');
+            words.forEach(word => {
+                const wordItem = document.createElement('p');
+                wordItem.textContent = `${word.de} – ${word.ru}`;
+                wordList.appendChild(wordItem);
+            });
+        }
+
+        // Запуск функции после загрузки страницы
+        window.onload = loadWords;
+
         function startExercise() {
             alert('Упражнение началось!');
         }
