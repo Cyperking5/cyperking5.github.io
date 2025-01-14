@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Switch Emulator</title>
+</head>
+<body>
+  <h1>Nintendo Switch Emulator (Web Version)</h1>
+  <input type="file" id="romUploader" accept=".nsp,.xci" />
+  <canvas id="emulatorScreen"></canvas>
+
+  <script>
+    async function loadEmulator() {
+      const wasm = await WebAssembly.instantiateStreaming(
+        fetch("emulator.wasm")
+      );
+      const emulator = wasm.instance.exports;
+
+      document
+        .getElementById("romUploader")
+        .addEventListener("change", async (event) => {
+          const file = event.target.files[0];
+          if (file) {
+            const romData = await file.arrayBuffer();
+            emulator.loadRom(new Uint8Array(romData));
+            emulator.run();
+          }
+        });
+    }
+
+    loadEmulator();
+  </script>
+</body>
+</html>
