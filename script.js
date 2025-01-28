@@ -1,35 +1,49 @@
-const canvas = document.getElementById('drawingCanvas');
-const ctx = canvas.getContext('2d');
-const colorPicker = document.getElementById('colorPicker');
-const brushSize = document.getElementById('brushSize');
-const clearButton = document.getElementById('clearButton');
+body {
+    font-family: Arial, sans-serif;
+    text-align: center;
+    background-color: #f0f0f0;
+    margin: 0;
+    padding: 0;
+}
 
-let isDrawing = false;
+h1 {
+    color: #333;
+}
 
-canvas.addEventListener('mousedown', () => {
-    isDrawing = true;
-    ctx.beginPath();
-    ctx.moveTo(event.offsetX, event.offsetY);
-});
+.canvas-container {
+    margin: 20px auto;
+    border: 2px solid #333;
+    background-color: #fff;
+    display: inline-block;
+}
 
-canvas.addEventListener('mousemove', () => {
-    if (isDrawing) {
-        ctx.strokeStyle = colorPicker.value;
-        ctx.lineWidth = brushSize.value;
-        ctx.lineTo(event.offsetX, event.offsetY);
-        ctx.stroke();
-    }
-});
+canvas {
+    display: block;
+}
 
-canvas.addEventListener('mouseup', () => {
-    isDrawing = false;
-    ctx.closePath();
-});
+.controls {
+    margin-top: 20px;
+}
 
-canvas.addEventListener('mouseleave', () => {
-    isDrawing = false;
-});
+.controls label {
+    margin-right: 10px;
+}
 
-clearButton.addEventListener('click', () => {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-});
+.controls input[type="color"] {
+    vertical-align: middle;
+}
+
+.controls input[type="range"] {
+    vertical-align: middle;
+}
+
+.controls button {
+    margin-left: 20px;
+    padding: 5px 10px;
+    font-size: 16px;
+    cursor: pointer;
+}
+
+.controls input[type="file"] {
+    margin-left: 20px;
+}
