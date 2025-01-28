@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Malen für Kinder</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <h1>Online Malen für Kinder</h1>
+    <div class="canvas-container">
+        <canvas id="drawingCanvas" width="800" height="600"></canvas>
+    </div>
+    <div class="controls">
+        <label for="colorPicker">Farbe:</label>
+        <input type="color" id="colorPicker" value="#000000">
+        <label for="brushSize">Pinselgröße:</label>
+        <input type="range" id="brushSize" min="1" max="50" value="5">
+        <button id="clearButton">Leinwand löschen</button>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
