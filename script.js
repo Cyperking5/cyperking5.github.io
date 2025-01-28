@@ -19,6 +19,7 @@ h1 {
 
 canvas {
     display: block;
+    touch-action: none; /* Verhindert Standard-Touch-Verhalten wie Scrollen */
 }
 
 .controls {
