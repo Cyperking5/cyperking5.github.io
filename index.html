@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cyperking5</title>
+  <style>
+    body {
+      margin: 0;
+      background: #0a0a0a;
+      color: #00ffee;
+      font-family: 'Orbitron', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: start;
+      min-height: 100vh;
+      padding-top: 40px;
+    }
+
+    h1 {
+      font-size: 4rem;
+      text-shadow: 0 0 20px #00ffee, 0 0 10px #007777;
+      margin-bottom: 40px;
+    }
+
+    canvas {
+      border: 2px solid #00ffee;
+      background: #111;
+      box-shadow: 0 0 20px #00ffee88;
+    }
+  </style>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+</head>
+<body>
+  <h1>Cyperking5</h1>
+  <canvas id="pong" width="600" height="400"></canvas>
+
+  <script>
+    const canvas = document.getElementById('pong');
+    const ctx = canvas.getContext('2d');
+
+    let paddleHeight = 80, paddleWidth = 10;
+    let playerY = (canvas.height - paddleHeight) / 2;
+    let aiY = playerY;
+    let ballX = canvas.width / 2, ballY = canvas.height / 2;
+    let ballSpeedX = 4, ballSpeedY = 4;
+    let paddleSpeed = 5;
+
+    function drawRect(x, y, w, h, color) {
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, w, h);
+    }
+
+    function drawCircle(x, y, r, color) {
+      ctx.fillStyle = color;
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2, false);
+      ctx.closePath();
+      ctx.fill();
+    }
+
+    function render() {
+      drawRect(0, 0, canvas.width, canvas.height, "#111");
+      drawRect(0, playerY, paddleWidth, paddleHeight, "#00ffee");
+      drawRect(canvas.width - paddleWidth, aiY, paddleWidth, paddleHeight, "#00ffee");
+      drawCircle(ballX, ballY, 8, "#00ffee");
+    }
+
+    function update() {
+      ballX += ballSpeedX;
+      ballY += ballSpeedY;
+
+      if (ballY + 8 > canvas.height || ballY - 8 < 0) {
+        ballSpeedY = -ballSpeedY;
+      }
+
+      // AI moves automatically
+      let aiCenter = aiY + paddleHeight / 2;
+      if (aiCenter < ballY - 10) aiY += paddleSpeed;
+      else if (aiCenter > ballY + 10) aiY -= paddleSpeed;
+
+      // Ball and paddle collision
+      if (
+        ballX < paddleWidth &&
+        ballY > playerY &&
+        ballY < playerY + paddleHeight
+      ) {
+        ballSpeedX = -ballSpeedX;
+      }
+
+      if (
+        ballX > canvas.width - paddleWidth &&
+        ballY > aiY &&
+        ballY < aiY + paddleHeight
+      ) {
+        ballSpeedX = -ballSpeedX;
+      }
+
+      // Reset ball
+      if (ballX < 0 || ballX > canvas.width) {
+        ballX = canvas.width / 2;
+        ballY = canvas.height / 2;
+        ballSpeedX = -ballSpeedX;
+      }
+    }
+
+    function game() {
+      update();
+      render();
+    }
+
+    setInterval(game, 1000 / 60);
+
+    // Mouse control
+    canvas.addEventListener("mousemove", function (evt) {
+      let rect = canvas.getBoundingClientRect();
+      let root = document.documentElement;
+      let mouseY = evt.clientY - rect.top - root.scrollTop;
+      playerY = mouseY - paddleHeight / 2;
+    });
+  </script>
+</body>
+</html>
