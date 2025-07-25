@@ -4,6 +4,11 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Cyperking5</title>
+
+  <!-- AdSense Script -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5310734846855331"
+     crossorigin="anonymous"></script>
+
   <style>
     body {
       margin: 0;
@@ -13,20 +18,18 @@
       display: flex;
       flex-direction: column;
       align-items: center;
-      justify-content: start;
-      min-height: 100vh;
       padding-top: 40px;
     }
 
     h1 {
       font-size: 4rem;
       text-shadow: 0 0 20px #00ffee, 0 0 10px #007777;
-      margin-bottom: 40px;
+      margin-bottom: 30px;
     }
 
     canvas {
-      border: 2px solid #00ffee;
       background: #111;
+      border: 2px solid #00ffee;
       box-shadow: 0 0 20px #00ffee88;
     }
   </style>
@@ -34,91 +37,91 @@
 </head>
 <body>
   <h1>Cyperking5</h1>
-  <canvas id="pong" width="600" height="400"></canvas>
+
+  <!-- AdSense Anzeige -->
+  <ins class="adsbygoogle"
+       style="display:block; text-align:center; margin-bottom: 20px;"
+       data-ad-client="ca-pub-5310734846855331"
+       data-ad-slot="1234567890"
+       data-ad-format="auto"
+       data-full-width-responsive="true"></ins>
+  <script>
+       (adsbygoogle = window.adsbygoogle || []).push({});
+  </script>
+
+  <canvas id="snake" width="400" height="400"></canvas>
 
   <script>
-    const canvas = document.getElementById('pong');
+    const canvas = document.getElementById('snake');
     const ctx = canvas.getContext('2d');
 
-    let paddleHeight = 80, paddleWidth = 10;
-    let playerY = (canvas.height - paddleHeight) / 2;
-    let aiY = playerY;
-    let ballX = canvas.width / 2, ballY = canvas.height / 2;
-    let ballSpeedX = 4, ballSpeedY = 4;
-    let paddleSpeed = 5;
+    const gridSize = 20;
+    const tileCount = canvas.width / gridSize;
 
-    function drawRect(x, y, w, h, color) {
+    let snake = [{ x: 10, y: 10 }];
+    let direction = { x: 0, y: 0 };
+    let food = { x: 15, y: 15 };
+    let score = 0;
+
+    function drawRect(x, y, color) {
       ctx.fillStyle = color;
-      ctx.fillRect(x, y, w, h);
-    }
-
-    function drawCircle(x, y, r, color) {
-      ctx.fillStyle = color;
-      ctx.beginPath();
-      ctx.arc(x, y, r, 0, Math.PI * 2, false);
-      ctx.closePath();
-      ctx.fill();
-    }
-
-    function render() {
-      drawRect(0, 0, canvas.width, canvas.height, "#111");
-      drawRect(0, playerY, paddleWidth, paddleHeight, "#00ffee");
-      drawRect(canvas.width - paddleWidth, aiY, paddleWidth, paddleHeight, "#00ffee");
-      drawCircle(ballX, ballY, 8, "#00ffee");
+      ctx.fillRect(x * gridSize, y * gridSize, gridSize - 2, gridSize - 2);
     }
 
     function update() {
-      ballX += ballSpeedX;
-      ballY += ballSpeedY;
+      const head = { x: snake[0].x + direction.x, y: snake[0].y + direction.y };
 
-      if (ballY + 8 > canvas.height || ballY - 8 < 0) {
-        ballSpeedY = -ballSpeedY;
-      }
-
-      // AI moves automatically
-      let aiCenter = aiY + paddleHeight / 2;
-      if (aiCenter < ballY - 10) aiY += paddleSpeed;
-      else if (aiCenter > ballY + 10) aiY -= paddleSpeed;
-
-      // Ball and paddle collision
+      // Game Over
       if (
-        ballX < paddleWidth &&
-        ballY > playerY &&
-        ballY < playerY + paddleHeight
+        head.x < 0 || head.x >= tileCount ||
+        head.y < 0 || head.y >= tileCount ||
+        snake.some(segment => segment.x === head.x && segment.y === head.y)
       ) {
-        ballSpeedX = -ballSpeedX;
+        snake = [{ x: 10, y: 10 }];
+        direction = { x: 0, y: 0 };
+        score = 0;
+        return;
       }
 
-      if (
-        ballX > canvas.width - paddleWidth &&
-        ballY > aiY &&
-        ballY < aiY + paddleHeight
-      ) {
-        ballSpeedX = -ballSpeedX;
-      }
+      snake.unshift(head);
 
-      // Reset ball
-      if (ballX < 0 || ballX > canvas.width) {
-        ballX = canvas.width / 2;
-        ballY = canvas.height / 2;
-        ballSpeedX = -ballSpeedX;
+      if (head.x === food.x && head.y === food.y) {
+        score++;
+        food = {
+          x: Math.floor(Math.random() * tileCount),
+          y: Math.floor(Math.random() * tileCount)
+        };
+      } else {
+        snake.pop();
       }
     }
 
-    function game() {
+    function draw() {
+      ctx.fillStyle = '#111';
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      drawRect(food.x, food.y, '#ff0066');
+
+      snake.forEach((segment, index) => {
+        drawRect(segment.x, segment.y, index === 0 ? '#00ffee' : '#0099aa');
+      });
+    }
+
+    function loop() {
       update();
-      render();
+      draw();
     }
 
-    setInterval(game, 1000 / 60);
-
-    // Mouse control
-    canvas.addEventListener("mousemove", function (evt) {
-      let rect = canvas.getBoundingClientRect();
-      let root = document.documentElement;
-      let mouseY = evt.clientY - rect.top - root.scrollTop;
-      playerY = mouseY - paddleHeight / 2;
+    document.addEventListener('keydown', e => {
+      switch (e.key) {
+        case 'ArrowUp': if (direction.y === 0) direction = { x: 0, y: -1 }; break;
+        case 'ArrowDown': if (direction.y === 0) direction = { x: 0, y: 1 }; break;
+        case 'ArrowLeft': if (direction.x === 0) direction = { x: -1, y: 0 }; break;
+        case 'ArrowRight': if (direction.x === 0) direction = { x: 1, y: 0 }; break;
+      }
     });
+
+    setInterval(loop, 150);
   </script>
 </body>
 </html>
