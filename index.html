@@ -1,77 +1,89 @@
-
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Snake</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Cyperking5</title>
   <style>
-    body {
-      margin: 0;
-      background: black;
-      color: white;
-      font-family: monospace;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    h1 {
-      margin: 20px 0 0 0;
-      font-size: 3rem;
-      color: #00ffee;
-      text-shadow: 0 0 10px #00ffee;
-    }
-    .snake-title {
-      display: flex;
-      justify-content: center;
-      font-size: 2rem;
-      margin-top: -10px;
-      margin-bottom: 20px;
-    }
-    .snake-title span {
-      color: #00ffee;
-      text-shadow: 0 0 10px #00ffee;
-      animation: snakeWave 1s infinite ease-in-out;
-    }
-    .snake-title span:nth-child(1) { animation-delay: 0s; }
-    .snake-title span:nth-child(3) { animation-delay: 0.1s; }
-    .snake-title span:nth-child(5) { animation-delay: 0.2s; }
-    .snake-title span:nth-child(7) { animation-delay: 0.3s; }
-    .snake-title span:nth-child(9) { animation-delay: 0.4s; }
-
-    @keyframes snakeWave {
-      0%, 100% { transform: translateY(0); }
-      50% { transform: translateY(-8px); }
-    }
-
-    canvas {
-      border: 2px solid #00ffee;
-    }
+    body { margin:0; background:#0a0a0a; color:#00ffee;
+           font-family:'Orbitron', sans-serif;
+           display:flex; flex-direction:column; align-items:center;
+           justify-content:start; min-height:100vh;
+           padding:40px 0 100px; }
+    h1 { font-size:4rem; text-shadow:0 0 20px #00ffee,0 0 10px #007777;
+         margin-bottom:20px; }
+    canvas { border:2px solid #00ffee; background:#111;
+             box-shadow:0 0 20px #00ffee88; }
+    .ad-container { position:fixed; bottom:0; width:100%;
+                   background:#0a0a0a; text-align:center;
+                   z-index:999; padding:10px 0; }
   </style>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5310734846855331"
-     crossorigin="anonymous"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600&display=swap" rel="stylesheet">
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5310734846855331" crossorigin="anonymous"></script>
 </head>
 <body>
   <h1>Cyperking5</h1>
-  <div class="snake-title">
-    <span>S</span><span>&nbsp;</span><span>N</span><span>&nbsp;</span>
-    <span>A</span><span>&nbsp;</span><span>K</span><span>&nbsp;</span><span>E</span>
-  </div>
-  <canvas id="game" width="400" height="400"></canvas>
-
-  <!-- AdMob unten -->
-  <div style="margin-top:20px;">
+  <canvas id="pong" width="600" height="400"></canvas>
+  <audio id="ping" src="ping.mp3" preload="auto"></audio>
+  <div class="ad-container">
     <ins class="adsbygoogle"
          style="display:block"
-         data-ad-client="ca-pub-5310734846855331"
+         data-ad-client="ca‑pub‑5310734846855331"
          data-ad-slot="2440550172"
          data-ad-format="auto"
          data-full-width-responsive="true"></ins>
-    <script>
-         (adsbygoogle = window.adsbygoogle || []).push({});
-    </script>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
   </div>
+  <script>
+    const canvas = document.getElementById('pong');
+    const ctx = canvas.getContext('2d');
+    const pingSound = document.getElementById('ping');
 
-  <script src="snake.js"></script>
+    const paddleHeight=80, paddleWidth=10;
+    let playerY=(canvas.height-paddleHeight)/2;
+    let aiY=playerY;
+    let ballX=canvas.width/2, ballY=canvas.height/2;
+    let ballSpeedX=4, ballSpeedY=4;
+    const paddleSpeed=5;
+    let playerScore=0, aiScore=0;
+    let upPressed=false, downPressed=false;
+
+    document.addEventListener("keydown",e=>{ if(e.key==="ArrowUp") upPressed=true; if(e.key==="ArrowDown") downPressed=true; });
+    document.addEventListener("keyup",e=>{ if(e.key==="ArrowUp") upPressed=false; if(e.key==="ArrowDown") downPressed=false; });
+
+    canvas.addEventListener("touchmove",e=>{ const t=e.touches[0]; const rect=canvas.getBoundingClientRect(); playerY = t.clientY-rect.top - paddleHeight/2; e.preventDefault(); }, {passive:false});
+
+    canvas.addEventListener("mousemove",e=>{ const rect=canvas.getBoundingClientRect(); const my=e.clientY-rect.top; playerY=my-paddleHeight/2; });
+
+    function drawRect(x,y,w,h,c){ ctx.fillStyle=c; ctx.fillRect(x,y,w,h); }
+    function drawCircle(x,y,r,c){ ctx.fillStyle=c; ctx.beginPath(); ctx.arc(x,y,r,0,Math.PI*2); ctx.fill(); }
+
+    function render(){
+      drawRect(0,0,canvas.width,canvas.height,"#111");
+      drawRect(0,playerY,paddleWidth,paddleHeight,"#00ffee");
+      drawRect(canvas.width-paddleWidth,aiY,paddleWidth,paddleHeight,"#00ffee");
+      drawCircle(ballX,ballY,8,"#00ffee");
+      ctx.font="30px Orbitron"; ctx.fillStyle="#00ffee";
+      ctx.fillText(playerScore,100,50);
+      ctx.fillText(aiScore,canvas.width-130,50);
+    }
+
+    function resetBall(){ ballX=canvas.width/2; ballY=canvas.height/2; ballSpeedX = -ballSpeedX; }
+
+    function update(){
+      if(upPressed) playerY-=paddleSpeed; if(downPressed) playerY+=paddleSpeed;
+      ballX+=ballSpeedX; ballY+=ballSpeedY;
+      if(ballY+8>canvas.height || ballY-8<0){ ballSpeedY=-ballSpeedY; pingSound.play(); }
+      let aiCenter=aiY+paddleHeight/2;
+      if(aiCenter<ballY-10) aiY+=paddleSpeed; else if(aiCenter>ballY+10) aiY-=paddleSpeed;
+      if(ballX<paddleWidth && ballY>playerY && ballY<playerY+paddleHeight){ ballSpeedX=-ballSpeedX; pingSound.play(); }
+      if(ballX>canvas.width-paddleWidth && ballY>aiY && ballY<aiY+paddleHeight){ ballSpeedX=-ballSpeedX; pingSound.play(); }
+      if(ballX<0){ aiScore++; resetBall(); } else if(ballX>canvas.width){ playerScore++; resetBall(); }
+      if(playerScore===5 || aiScore===5){ alert((playerScore===5?"Du hast gewonnen!":"Die KI hat gewonnen!")+" Neustart."); playerScore=0; aiScore=0; resetBall(); }
+    }
+
+    function game(){ update(); render(); }
+    setInterval(game,1000/60);
+  </script>
 </body>
 </html>
