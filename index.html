@@ -10,15 +10,49 @@
       padding: 0;
       height: 100%;
       overflow: hidden;
+      font-family: sans-serif;
+    }
+    #wrapper {
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+    }
+    #iframe-container {
+      flex: 1;
     }
     iframe {
-      border: none;
       width: 100%;
       height: 100%;
+      border: none;
+    }
+    #ad-container {
+      background: #f9f9f9;
+      padding: 4px 0;
+      text-align: center;
     }
   </style>
+
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5310734846855331"
+     crossorigin="anonymous"></script>
 </head>
 <body>
-  <iframe src="https://bsgggxkl.manus.space/" allowfullscreen></iframe>
+  <div id="wrapper">
+    <div id="iframe-container">
+      <iframe src="https://bsgggxkl.manus.space/" allowfullscreen></iframe>
+    </div>
+    <div id="ad-container">
+      <!-- Banner unten -->
+      <ins class="adsbygoogle"
+           style="display:block"
+           data-ad-client="ca-pub-5310734846855331"
+           data-ad-slot="2440550172"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
+      <script>
+           (adsbygoogle = window.adsbygoogle || []).push({});
+      </script>
+    </div>
+  </div>
 </body>
 </html>
