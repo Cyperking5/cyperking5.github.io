@@ -2,33 +2,59 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
+  <title>Retro Pong</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Manus Space eingebettet</title>
   <style>
     html, body {
       margin: 0;
       padding: 0;
+      background: #000;
+      color: #fff;
+      font-family: monospace;
       height: 100%;
       overflow: hidden;
-      font-family: sans-serif;
     }
+
     #wrapper {
       display: flex;
       flex-direction: column;
       height: 100vh;
     }
-    #iframe-container {
+
+    canvas {
       flex: 1;
+      background: #000;
+      display: block;
     }
-    iframe {
+
+    #touch-controls {
+      display: none;
       width: 100%;
-      height: 100%;
-      border: none;
-    }
-    #ad-container {
-      background: #f9f9f9;
-      padding: 4px 0;
       text-align: center;
+      z-index: 10;
+    }
+
+    .btn {
+      width: 50%;
+      height: 100px;
+      background: #111;
+      color: white;
+      font-size: 24px;
+      border: 1px solid white;
+      float: left;
+      touch-action: manipulation;
+    }
+
+    @media (pointer: coarse) {
+      #touch-controls {
+        display: flex;
+      }
+    }
+
+    #ad-container {
+      background: #111;
+      text-align: center;
+      padding: 4px 0;
     }
   </style>
 
@@ -38,9 +64,13 @@
 </head>
 <body>
   <div id="wrapper">
-    <div id="iframe-container">
-      <iframe src="https://bsgggxkl.manus.space/" allowfullscreen></iframe>
+    <canvas id="gameCanvas" width="600" height="400"></canvas>
+
+    <div id="touch-controls">
+      <button class="btn" id="btn-up">⬆️</button>
+      <button class="btn" id="btn-down">⬇️</button>
     </div>
+
     <div id="ad-container">
       <!-- Banner unten -->
       <ins class="adsbygoogle"
@@ -54,5 +84,124 @@
       </script>
     </div>
   </div>
+
+  <script>
+    const canvas = document.getElementById('gameCanvas');
+    const ctx = canvas.getContext('2d');
+
+    let paddleHeight = 80;
+    let paddleWidth = 10;
+
+    let playerY = canvas.height / 2 - paddleHeight / 2;
+    let aiY = canvas.height / 2 - paddleHeight / 2;
+
+    let ballX = canvas.width / 2;
+    let ballY = canvas.height / 2;
+    let ballSpeedX = 4;
+    let ballSpeedY = 2;
+
+    let upPressed = false;
+    let downPressed = false;
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'ArrowUp') upPressed = true;
+      if (e.key === 'ArrowDown') downPressed = true;
+    });
+
+    document.addEventListener('keyup', e => {
+      if (e.key === 'ArrowUp') upPressed = false;
+      if (e.key === 'ArrowDown') downPressed = false;
+    });
+
+    document.addEventListener('mousemove', e => {
+      const rect = canvas.getBoundingClientRect();
+      const root = document.documentElement;
+      let mouseY = e.clientY - rect.top - root.scrollTop;
+      playerY = mouseY - paddleHeight / 2;
+    });
+
+    document.getElementById('btn-up').addEventListener('touchstart', () => upPressed = true);
+    document.getElementById('btn-up').addEventListener('touchend', () => upPressed = false);
+    document.getElementById('btn-down').addEventListener('touchstart', () => downPressed = true);
+    document.getElementById('btn-down').addEventListener('touchend', () => downPressed = false);
+
+    function drawRect(x, y, w, h, color = '#fff') {
+      ctx.fillStyle = color;
+      ctx.fillRect(x, y, w, h);
+    }
+
+    function drawBall(x, y, r) {
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.arc(x, y, r, 0, Math.PI * 2, true);
+      ctx.fill();
+    }
+
+    function drawNet() {
+      for (let i = 0; i < canvas.height; i += 20) {
+        drawRect(canvas.width / 2 - 1, i, 2, 10);
+      }
+    }
+
+    function update() {
+      if (upPressed) playerY -= 6;
+      if (downPressed) playerY += 6;
+
+      playerY = Math.max(0, Math.min(canvas.height - paddleHeight, playerY));
+
+      // AI movement
+      let aiCenter = aiY + paddleHeight / 2;
+      if (aiCenter < ballY - 35) aiY += 3.5;
+      else if (aiCenter > ballY + 35) aiY -= 3.5;
+
+      aiY = Math.max(0, Math.min(canvas.height - paddleHeight, aiY));
+
+      // Ball movement
+      ballX += ballSpeedX;
+      ballY += ballSpeedY;
+
+      if (ballY < 0 || ballY > canvas.height) ballSpeedY = -ballSpeedY;
+
+      // Paddle collisions
+      if (ballX < paddleWidth) {
+        if (ballY > playerY && ballY < playerY + paddleHeight) {
+          ballSpeedX = -ballSpeedX;
+        } else {
+          resetBall();
+        }
+      }
+
+      if (ballX > canvas.width - paddleWidth) {
+        if (ballY > aiY && ballY < aiY + paddleHeight) {
+          ballSpeedX = -ballSpeedX;
+        } else {
+          resetBall();
+        }
+      }
+    }
+
+    function resetBall() {
+      ballX = canvas.width / 2;
+      ballY = canvas.height / 2;
+      ballSpeedX = -ballSpeedX;
+      ballSpeedY = (Math.random() * 4) - 2;
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      drawNet();
+      drawRect(0, playerY, paddleWidth, paddleHeight);
+      drawRect(canvas.width - paddleWidth, aiY, paddleWidth, paddleHeight);
+      drawBall(ballX, ballY, 8);
+    }
+
+    function gameLoop() {
+      update();
+      draw();
+      requestAnimationFrame(gameLoop);
+    }
+
+    gameLoop();
+  </script>
 </body>
 </html>
