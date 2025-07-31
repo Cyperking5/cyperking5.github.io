@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8">
   <title>AdBlocker Feedback</title>
   <style>
     body {
@@ -85,37 +85,29 @@
       padding: 15px 0;
     }
 
-    .ads {
-      margin-bottom: 24px;
-    }
-
     small {
       color: #6b7280;
     }
   </style>
 
+  <!-- reCAPTCHA v3 -->
+  <script src="https://www.google.com/recaptcha/api.js?render=6Lft-pUrAAAAALokbwg3S8c27oJggzuHSnjlDoh4"></script>
+
   <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5310734846855331"
      crossorigin="anonymous"></script>
-
-  <!-- reCAPTCHA v3 -->
-  <script src="https://www.google.com/recaptcha/api.js?render=6Lft-pUrAAAAALokbwg3S8c27oJggzuHSnjlDoh4"></script>
 </head>
 <body>
   <div class="container">
-
+    
     <!-- Werbung oben -->
-    <div class="ads">
-      <ins class="adsbygoogle"
-           style="display:block"
-           data-ad-client="ca-pub-5310734846855331"
-           data-ad-slot="4934458362"
-           data-ad-format="auto"
-           data-full-width-responsive="true"></ins>
-      <script>
-        (adsbygoogle = window.adsbygoogle || []).push({});
-      </script>
-    </div>
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-5310734846855331"
+         data-ad-slot="4934458362"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
 
     <h1>Welcome to AdBlocker Feedback</h1>
     <p>Let us know what you think. Rate us and leave a comment below.</p>
@@ -128,12 +120,21 @@
       <span class="star" data-value="5">&#9733;</span>
     </div>
 
-    <textarea id="comment" rows="4" placeholder="Your comment..."></textarea><br>
+    <textarea id="comment" rows="6" placeholder="Your comment..."></textarea><br>
     <button onclick="submitFeedback()">Submit Feedback</button>
 
     <div id="feedback-list">
       <h2 style="margin-top: 2em;">Recent Feedback</h2>
     </div>
+
+    <!-- Werbung unten -->
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-5310734846855331"
+         data-ad-slot="4934458362"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
   </div>
 
   <!-- Firebase Modular SDK -->
