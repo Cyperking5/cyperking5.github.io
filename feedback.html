@@ -94,13 +94,15 @@
     }
   </style>
 
+  <!-- Google reCAPTCHA -->
+  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+
   <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5310734846855331"
      crossorigin="anonymous"></script>
 </head>
 <body>
   <div class="container">
-    
     <!-- Werbung oben -->
     <div class="ads">
       <ins class="adsbygoogle"
@@ -118,14 +120,18 @@
     <p>Let us know what you think. Rate us and leave a comment below.</p>
 
     <div class="stars" id="rating">
-      <span class="star" data-value="1">&#9733;</span>
-      <span class="star" data-value="2">&#9733;</span>
-      <span class="star" data-value="3">&#9733;</span>
-      <span class="star" data-value="4">&#9733;</span>
-      <span class="star" data-value="5">&#9733;</span>
+      <span class="star" data-value="1" title="1 star">&#9733;</span>
+      <span class="star" data-value="2" title="2 stars">&#9733;</span>
+      <span class="star" data-value="3" title="3 stars">&#9733;</span>
+      <span class="star" data-value="4" title="4 stars">&#9733;</span>
+      <span class="star" data-value="5" title="5 stars">&#9733;</span>
     </div>
 
     <textarea id="comment" rows="4" placeholder="Your comment..."></textarea><br>
+
+    <!-- reCAPTCHA -->
+    <div class="g-recaptcha" data-sitekey="6Lfx-JUrAAAAAMLytcDbAFdtsbZwuwiT9PPHhPdI"></div>
+
     <button onclick="submitFeedback()">Submit Feedback</button>
 
     <div id="feedback-list">
@@ -166,18 +172,27 @@
 
     window.submitFeedback = function () {
       const comment = document.getElementById('comment').value.trim();
+      const captchaResponse = grecaptcha.getResponse();
+
       if (selectedRating === 0 || comment === '') {
         alert('Please enter a rating and a comment.');
+        return;
+      }
+
+      if (!captchaResponse) {
+        alert("Please complete the reCAPTCHA.");
         return;
       }
 
       push(ref(db, 'feedbacks'), {
         rating: selectedRating,
         comment: comment,
-        created_at: new Date().toISOString()
+        created_at: new Date().toISOString(),
+        captcha: captchaResponse // optional: für spätere Prüfung auf Server
       }).then(() => {
         document.getElementById('comment').value = '';
         selectedRating = 0;
+        grecaptcha.reset();
         document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));
         loadFeedback();
       });
