@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>AdBlocker Feedback</title>
   <style>
     body {
@@ -94,15 +94,17 @@
     }
   </style>
 
-  <!-- reCAPTCHA v3 -->
-  <script src="https://www.google.com/recaptcha/api.js?render=6Lft-pUrAAAAALokbwg3S8c27oJggzuHSnjlDoh4"></script>
-
   <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5310734846855331"
      crossorigin="anonymous"></script>
+
+  <!-- reCAPTCHA v3 -->
+  <script src="https://www.google.com/recaptcha/api.js?render=6Lft-pUrAAAAALokbwg3S8c27oJggzuHSnjlDoh4"></script>
 </head>
 <body>
   <div class="container">
+
+    <!-- Werbung oben -->
     <div class="ads">
       <ins class="adsbygoogle"
            style="display:block"
@@ -111,7 +113,7 @@
            data-ad-format="auto"
            data-full-width-responsive="true"></ins>
       <script>
-           (adsbygoogle = window.adsbygoogle || []).push({});
+        (adsbygoogle = window.adsbygoogle || []).push({});
       </script>
     </div>
 
@@ -119,11 +121,11 @@
     <p>Let us know what you think. Rate us and leave a comment below.</p>
 
     <div class="stars" id="rating">
-      <span class="star" data-value="1" title="1 star">&#9733;</span>
-      <span class="star" data-value="2" title="2 stars">&#9733;</span>
-      <span class="star" data-value="3" title="3 stars">&#9733;</span>
-      <span class="star" data-value="4" title="4 stars">&#9733;</span>
-      <span class="star" data-value="5" title="5 stars">&#9733;</span>
+      <span class="star" data-value="1">&#9733;</span>
+      <span class="star" data-value="2">&#9733;</span>
+      <span class="star" data-value="3">&#9733;</span>
+      <span class="star" data-value="4">&#9733;</span>
+      <span class="star" data-value="5">&#9733;</span>
     </div>
 
     <textarea id="comment" rows="4" placeholder="Your comment..."></textarea><br>
@@ -144,7 +146,7 @@
       authDomain: "adblocker-feedback.firebaseapp.com",
       databaseURL: "https://adblocker-feedback-default-rtdb.europe-west1.firebasedatabase.app",
       projectId: "adblocker-feedback",
-      storageBucket: "adblocker-feedback.firebasestorage.app",
+      storageBucket: "adblocker-feedback.appspot.com",
       messagingSenderId: "504023672779",
       appId: "1:504023672779:web:cf6a9fd51a8f870ae7384e",
       measurementId: "G-DHFRDS6E62"
@@ -168,8 +170,13 @@
     window.submitFeedback = function () {
       const comment = document.getElementById('comment').value.trim();
 
+      if (localStorage.getItem("feedbackSent") === "true") {
+        alert("Du hast bereits Feedback abgegeben.");
+        return;
+      }
+
       if (selectedRating === 0 || comment === '') {
-        alert('Please enter a rating and a comment.');
+        alert('Bitte Bewertung und Kommentar angeben.');
         return;
       }
 
@@ -179,12 +186,14 @@
             rating: selectedRating,
             comment: comment,
             created_at: new Date().toISOString(),
-            recaptcha_token: token // Optional: kann für spätere Server-Validierung gespeichert werden
+            recaptcha_token: token
           }).then(() => {
+            localStorage.setItem("feedbackSent", "true");
             document.getElementById('comment').value = '';
             selectedRating = 0;
             document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));
             loadFeedback();
+            alert("Vielen Dank für dein Feedback!");
           });
         });
       });
