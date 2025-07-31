@@ -2,97 +2,51 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Adblocker Feedback</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script type="module">
-    // Firebase importieren
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-    import { getDatabase, ref, push, onChildAdded } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-database.js";
-
-    const firebaseConfig = {
-      apiKey: "AIzaSyCfS9qn-B8MZx8gHs7a_TiU8TY5LROeFCA",
-      authDomain: "adblocker-feedback.firebaseapp.com",
-      databaseURL: "https://adblocker-feedback-default-rtdb.europe-west1.firebasedatabase.app",
-      projectId: "adblocker-feedback",
-      storageBucket: "adblocker-feedback.appspot.com",
-      messagingSenderId: "504023672779",
-      appId: "1:504023672779:web:cf6a9fd51a8f870ae7384e",
-      measurementId: "G-DHFRDS6E62"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const database = getDatabase(app);
-    const feedbackRef = ref(database, 'feedback');
-
-    // Neue Kommentare anhängen (unten!)
-    const feedbackList = document.getElementById("feedbackList");
-    onChildAdded(feedbackRef, (data) => {
-      const item = data.val();
-      const div = document.createElement('div');
-      div.className = 'feedback-item';
-      div.innerHTML = `
-        <p>${item.comment}</p>
-        <p>${'★'.repeat(item.rating)}</p>
-        <small>${item.timestamp}</small>
-      `;
-      feedbackList.appendChild(div); // WICHTIG: Append statt Prepend
-    });
-
-    // Kommentar absenden
-    window.submitFeedback = () => {
-      const comment = document.getElementById("comment").value;
-      const rating = document.querySelector('input[name="rating"]:checked')?.value;
-      if (!comment || !rating) return alert("Please enter comment and rating!");
-
-      const timestamp = new Date().toLocaleString();
-      push(feedbackRef, { comment, rating, timestamp });
-
-      document.getElementById("comment").value = "";
-      document.querySelector('input[name="rating"]:checked').checked = false;
-    };
-  </script>
-
+  <title>AdBlocker Feedback</title>
   <style>
     body {
-      font-family: Arial, sans-serif;
-      background: #f4f7fb;
+      font-family: "Segoe UI", sans-serif;
+      background-color: #f7f8fa;
       margin: 0;
-      padding: 20px;
-      text-align: center;
+      padding: 40px 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
     }
 
     .container {
-      max-width: 600px;
-      margin: auto;
       background: white;
-      padding: 20px;
+      max-width: 600px;
+      width: 100%;
+      padding: 30px;
       border-radius: 16px;
-      box-shadow: 0 0 20px rgba(0,0,0,0.1);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+
+    h1 {
+      margin-bottom: 0.5em;
+      color: #111827;
+    }
+
+    p {
+      color: #4b5563;
+      margin-bottom: 1.5em;
     }
 
     textarea {
       width: 100%;
-      max-width: 500px;
       padding: 12px;
       font-size: 1rem;
       border: 1px solid #ccc;
       border-radius: 8px;
       resize: vertical;
-      display: block;
-      margin: 12px auto;
-    }
-
-    .rating {
-      display: flex;
-      justify-content: center;
-      gap: 6px;
-      margin: 10px 0;
     }
 
     button {
-      margin: 8px auto;
-      display: block;
-      padding: 10px 20px;
+      margin-top: 12px;
+      padding: 12px 24px;
       background-color: #3b82f6;
       color: white;
       border: none;
@@ -102,57 +56,153 @@
       transition: background 0.3s ease;
     }
 
-    .feedback-item {
-      text-align: center;
-      margin-bottom: 16px;
-      padding: 8px 12px;
-      background: #f9f9f9;
-      border-radius: 8px;
+    button:hover {
+      background-color: #2563eb;
     }
 
-    h1 {
-      margin-bottom: 10px;
+    .stars {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 1em;
+    }
+
+    .star {
+      font-size: 2rem;
+      color: #d1d5db;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .star:hover,
+    .star.selected {
+      color: gold;
+    }
+
+    .feedback-item {
+      text-align: left;
+      border-top: 1px solid #e5e7eb;
+      padding: 15px 0;
     }
 
     .ads {
-      margin: 20px auto;
+      margin-bottom: 24px;
+    }
+
+    small {
+      color: #6b7280;
     }
   </style>
-</head>
 
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5310734846855331"
+     crossorigin="anonymous"></script>
+</head>
 <body>
   <div class="container">
-    <h1>Welcome to the Adblocker Feedback Page</h1>
-
-    <!-- Werbung -->
+    
+    <!-- Werbung oben -->
     <div class="ads">
-      <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5310734846855331"
-        crossorigin="anonymous"></script>
       <ins class="adsbygoogle"
-        style="display:block"
-        data-ad-client="ca-pub-5310734846855331"
-        data-ad-slot="4934458362"
-        data-ad-format="auto"
-        data-full-width-responsive="true"></ins>
+           style="display:block"
+           data-ad-client="ca-pub-5310734846855331"
+           data-ad-slot="4934458362"
+           data-ad-format="auto"
+           data-full-width-responsive="true"></ins>
       <script>
-        (adsbygoogle = window.adsbygoogle || []).push({});
+           (adsbygoogle = window.adsbygoogle || []).push({});
       </script>
     </div>
 
-    <!-- Kommentarformular -->
-    <textarea id="comment" placeholder="Write your feedback..."></textarea>
-    <div class="rating">
-      <label><input type="radio" name="rating" value="1">★</label>
-      <label><input type="radio" name="rating" value="2">★★</label>
-      <label><input type="radio" name="rating" value="3">★★★</label>
-      <label><input type="radio" name="rating" value="4">★★★★</label>
-      <label><input type="radio" name="rating" value="5">★★★★★</label>
+    <h1>Welcome to AdBlocker Feedback</h1>
+    <p>Let us know what you think. Rate us and leave a comment below.</p>
+
+    <div class="stars" id="rating">
+      <span class="star" data-value="1">&#9733;</span>
+      <span class="star" data-value="2">&#9733;</span>
+      <span class="star" data-value="3">&#9733;</span>
+      <span class="star" data-value="4">&#9733;</span>
+      <span class="star" data-value="5">&#9733;</span>
     </div>
+
+    <textarea id="comment" rows="4" placeholder="Your comment..."></textarea><br>
     <button onclick="submitFeedback()">Submit Feedback</button>
 
-    <!-- Kommentarbereich -->
-    <h3>Recent Feedback</h3>
-    <div id="feedbackList"></div>
+    <div id="feedback-list">
+      <h2 style="margin-top: 2em;">Recent Feedback</h2>
+    </div>
   </div>
+
+  <!-- Firebase Modular SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getDatabase, ref, push, get, child } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCfS9qn-B8MZx8gHs7a_TiU8TY5LROeFCA",
+      authDomain: "adblocker-feedback.firebaseapp.com",
+      databaseURL: "https://adblocker-feedback-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "adblocker-feedback",
+      storageBucket: "adblocker-feedback.firebasestorage.app",
+      messagingSenderId: "504023672779",
+      appId: "1:504023672779:web:cf6a9fd51a8f870ae7384e",
+      measurementId: "G-DHFRDS6E62"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    let selectedRating = 0;
+
+    document.querySelectorAll('.star').forEach(star => {
+      star.addEventListener('click', function () {
+        selectedRating = this.getAttribute('data-value');
+        document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));
+        for (let i = 0; i < selectedRating; i++) {
+          document.querySelectorAll('.star')[i].classList.add('selected');
+        }
+      });
+    });
+
+    window.submitFeedback = function () {
+      const comment = document.getElementById('comment').value.trim();
+      if (selectedRating === 0 || comment === '') {
+        alert('Please enter a rating and a comment.');
+        return;
+      }
+
+      push(ref(db, 'feedbacks'), {
+        rating: selectedRating,
+        comment: comment,
+        created_at: new Date().toISOString()
+      }).then(() => {
+        document.getElementById('comment').value = '';
+        selectedRating = 0;
+        document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));
+        loadFeedback();
+      });
+    }
+
+    function loadFeedback() {
+      get(child(ref(db), 'feedbacks')).then(snapshot => {
+        const feedbackList = document.getElementById('feedback-list');
+        feedbackList.innerHTML = '<h2>Recent Feedback</h2>';
+        const data = snapshot.val();
+        if (!data) return;
+        Object.values(data).reverse().forEach(item => {
+          const div = document.createElement('div');
+          div.className = 'feedback-item';
+          div.innerHTML = `
+            <div class="stars">${'&#9733;'.repeat(item.rating)}${'&#9734;'.repeat(5 - item.rating)}</div>
+            <div>${item.comment}</div>
+            <small>${new Date(item.created_at).toLocaleString()}</small>
+          `;
+          feedbackList.appendChild(div);
+        });
+      });
+    }
+
+    window.onload = loadFeedback;
+  </script>
 </body>
 </html>
