@@ -94,8 +94,8 @@
     }
   </style>
 
-  <!-- Google reCAPTCHA -->
-  <script src="https://www.google.com/recaptcha/api.js" async defer></script>
+  <!-- reCAPTCHA v3 -->
+  <script src="https://www.google.com/recaptcha/api.js?render=6Lft-pUrAAAAALokbwg3S8c27oJggzuHSnjlDoh4"></script>
 
   <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5310734846855331"
@@ -103,7 +103,6 @@
 </head>
 <body>
   <div class="container">
-    <!-- Werbung oben -->
     <div class="ads">
       <ins class="adsbygoogle"
            style="display:block"
@@ -128,10 +127,6 @@
     </div>
 
     <textarea id="comment" rows="4" placeholder="Your comment..."></textarea><br>
-
-    <!-- reCAPTCHA -->
-    <div class="g-recaptcha" data-sitekey="6Lfx-JUrAAAAAKnqlkOtoZumu5YKPZHlxYVwanEQ"></div>
-
     <button onclick="submitFeedback()">Submit Feedback</button>
 
     <div id="feedback-list">
@@ -172,29 +167,26 @@
 
     window.submitFeedback = function () {
       const comment = document.getElementById('comment').value.trim();
-      const captchaResponse = grecaptcha.getResponse();
 
       if (selectedRating === 0 || comment === '') {
         alert('Please enter a rating and a comment.');
         return;
       }
 
-      if (!captchaResponse) {
-        alert("Please complete the reCAPTCHA.");
-        return;
-      }
-
-      push(ref(db, 'feedbacks'), {
-        rating: selectedRating,
-        comment: comment,
-        created_at: new Date().toISOString(),
-        captcha: captchaResponse // optional: für spätere Prüfung auf Server
-      }).then(() => {
-        document.getElementById('comment').value = '';
-        selectedRating = 0;
-        grecaptcha.reset();
-        document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));
-        loadFeedback();
+      grecaptcha.ready(() => {
+        grecaptcha.execute('6Lft-pUrAAAAALokbwg3S8c27oJggzuHSnjlDoh4', { action: 'submit_feedback' }).then(token => {
+          push(ref(db, 'feedbacks'), {
+            rating: selectedRating,
+            comment: comment,
+            created_at: new Date().toISOString(),
+            recaptcha_token: token // Optional: kann für spätere Server-Validierung gespeichert werden
+          }).then(() => {
+            document.getElementById('comment').value = '';
+            selectedRating = 0;
+            document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));
+            loadFeedback();
+          });
+        });
       });
     }
 
