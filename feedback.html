@@ -17,7 +17,7 @@
 
     .container {
       background: white;
-      max-width: 600px;
+      max-width: 700px;
       width: 100%;
       padding: 30px;
       border-radius: 16px;
@@ -36,7 +36,7 @@
     }
 
     textarea {
-      width: 80%;
+      width: 100%;
       padding: 12px;
       font-size: 1rem;
       border: 1px solid #ccc;
@@ -88,6 +88,59 @@
     small {
       color: #6b7280;
     }
+
+    .rating-summary {
+      display: flex;
+      flex-direction: row;
+      gap: 30px;
+      margin-top: 40px;
+      background-color: #1f2937;
+      color: #f9fafb;
+      padding: 20px;
+      border-radius: 16px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .rating-score {
+      text-align: center;
+    }
+
+    .rating-score .score {
+      font-size: 3rem;
+      font-weight: bold;
+    }
+
+    .rating-score .count {
+      font-size: 0.9rem;
+      color: #9ca3af;
+    }
+
+    .rating-bars {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .rating-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .rating-bar .bar {
+      flex: 1;
+      height: 10px;
+      border-radius: 8px;
+      background-color: #374151;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .rating-bar .fill {
+      height: 100%;
+      background-color: #60a5fa;
+    }
   </style>
 
   <!-- reCAPTCHA v3 -->
@@ -99,7 +152,6 @@
 </head>
 <body>
   <div class="container">
-    
     <!-- Werbung oben -->
     <ins class="adsbygoogle"
          style="display:block"
@@ -112,6 +164,17 @@
     <h1>Welcome to AdBlocker Feedback</h1>
     <p>Let us know what you think. Rate us and leave a comment below.</p>
 
+    <!-- Bewertungsauswertung -->
+    <div class="rating-summary" id="rating-summary">
+      <div class="rating-score">
+        <div id="avg-rating" class="score">0,0</div>
+        <div class="stars" id="avg-stars"></div>
+        <div id="total-ratings" class="count">0 Bewertungen</div>
+      </div>
+      <div class="rating-bars" id="rating-bars"></div>
+    </div>
+
+    <!-- Bewertungsabgabe -->
     <div class="stars" id="rating">
       <span class="star" data-value="1">&#9733;</span>
       <span class="star" data-value="2">&#9733;</span>
@@ -206,17 +269,63 @@
         feedbackList.innerHTML = '<h2>Recent Feedback</h2>';
         const data = snapshot.val();
         if (!data) return;
+
+        const ratings = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+        let total = 0;
+        let sum = 0;
+
         Object.values(data).reverse().forEach(item => {
+          const r = parseInt(item.rating);
+          if (ratings[r] !== undefined) {
+            ratings[r]++;
+            total++;
+            sum += r;
+          }
+
           const div = document.createElement('div');
           div.className = 'feedback-item';
           div.innerHTML = `
-            <div class="stars">${'&#9733;'.repeat(item.rating)}${'&#9734;'.repeat(5 - item.rating)}</div>
+            <div class="stars">${'★'.repeat(item.rating)}${'☆'.repeat(5 - item.rating)}</div>
             <div>${item.comment}</div>
             <small>${new Date(item.created_at).toLocaleString()}</small>
           `;
           feedbackList.appendChild(div);
         });
+
+        updateRatingSummary(ratings, total, sum);
       });
+    }
+
+    function updateRatingSummary(ratings, total, sum) {
+      const avg = total > 0 ? (sum / total) : 0;
+
+      document.getElementById('avg-rating').textContent = avg.toFixed(1).replace('.', ',');
+      document.getElementById('total-ratings').textContent = `${total.toLocaleString()} Bewertungen`;
+
+      const starsEl = document.getElementById('avg-stars');
+      starsEl.innerHTML = '';
+      const fullStars = Math.floor(avg);
+      const halfStar = avg - fullStars >= 0.5;
+      for (let i = 0; i < 5; i++) {
+        const star = document.createElement('span');
+        star.innerHTML = i < fullStars ? '★' : (i === fullStars && halfStar ? '⯨' : '☆');
+        star.style.color = '#fbbf24';
+        star.style.fontSize = '1.5rem';
+        starsEl.appendChild(star);
+      }
+
+      const barsEl = document.getElementById('rating-bars');
+      barsEl.innerHTML = '';
+      const max = Math.max(...Object.values(ratings)) || 1;
+      for (let i = 5; i >= 1; i--) {
+        const bar = document.createElement('div');
+        bar.className = 'rating-bar';
+        bar.innerHTML = `
+          <span>${i}</span>
+          <div class="bar"><div class="fill" style="width: ${(ratings[i] / max) * 100}%"></div></div>
+        `;
+        barsEl.appendChild(bar);
+      }
     }
 
     window.onload = loadFeedback;
