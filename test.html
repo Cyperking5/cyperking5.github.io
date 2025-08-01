@@ -1,127 +1,386 @@
-<!DOCTYPE html><html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>AdBlocker Feedback</title>
-  <style>
-    body {
-      font-family: sans-serif;
-      max-width: 600px;
-      margin: auto;
-      padding: 20px;
-      background: #f4f4f4;
-    }
-    h1 { margin-top: 0; }
-    textarea {
-      width: 100%;
-      height: 100px;
-    }
-    .stars span {
-      font-size: 24px;
-      cursor: pointer;
-    }
-    .selected { color: gold; }
-    .lang-selector {
-      float: right;
-      margin-top: -50px;
-    }
-    .lang-selector select {
-      font-size: 14px;
-    }
-  </style>
-</head>
-<body>
-  <div class="lang-selector">
-    🌐 <select id="languageSelect"></select>
-  </div>  <h1 id="title"></h1>
-  <p id="subtitle"></p>  <div class="stars">
-    <span class="star" data-rating="1">★</span>
-    <span class="star" data-rating="2">★</span>
-    <span class="star" data-rating="3">★</span>
-    <span class="star" data-rating="4">★</span>
-    <span class="star" data-rating="5">★</span>
-  </div>  <textarea id="comment" placeholder=""></textarea><br><br><button onclick="submitFeedback()" id="submitBtn"></button> <br><br> <a href="#" id="privacy"></a>
-
-  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"></script>  <script>
-    const firebaseConfig = {
-      apiKey: "DEINE_API_KEY",
-      authDomain: "DEIN_PROJECT.firebaseapp.com",
-      projectId: "DEIN_PROJECT",
-      storageBucket: "DEIN_PROJECT.appspot.com",
-      messagingSenderId: "SENDER_ID",
-      appId: "APP_ID"
-    };
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-
-    const defaultLang = 'en';
-    let selectedLang = navigator.language.slice(0, 2) || defaultLang;
-    let selectedRating = 0;
-
+<!DOCTYPE html>  
+<html lang="en">  
+<head>  
+  <meta charset="UTF-8" />  
+  <title>AdBlocker Feedback</title>  
+  <style>  
+    body {  
+      font-family: "Segoe UI", sans-serif;  
+      background-color: #f7f8fa;  
+      margin: 0;  
+      padding: 40px 20px;  
+      display: flex;  
+      flex-direction: column;  
+      align-items: center;  
+      min-height: 100vh;  
+      direction: ltr; /* default, wird per JS ggf. überschrieben */  
+    }  
+  
+    .container {  
+      background: white;  
+      max-width: 600px;  
+      width: 100%;  
+      padding: 30px;  
+      border-radius: 16px;  
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);  
+      text-align: center;  
+    }  
+  
+    h1 {  
+      margin-bottom: 0.5em;  
+      color: #111827;  
+    }  
+  
+    p {  
+      color: #4b5563;  
+      margin-bottom: 1.5em;  
+    }  
+  
+    textarea {  
+      width: 80%;  
+      padding: 12px;  
+      font-size: 1rem;  
+      border: 1px solid #ccc;  
+      border-radius: 8px;  
+      resize: vertical;  
+    }  
+  
+    button {  
+      margin-top: 12px;  
+      padding: 12px 24px;  
+      background-color: #3b82f6;  
+      color: white;  
+      border: none;  
+      border-radius: 8px;  
+      font-size: 1rem;  
+      cursor: pointer;  
+      transition: background 0.3s ease;  
+    }  
+  
+    button:hover {  
+      background-color: #2563eb;  
+    }  
+  
+    .stars {  
+      display: flex;  
+      justify-content: center;  
+      gap: 8px;  
+      margin-bottom: 1em;  
+      user-select: none;  
+    }  
+  
+    .star {  
+      font-size: 2rem;  
+      color: #d1d5db;  
+      cursor: pointer;  
+      transition: color 0.2s;  
+    }  
+  
+    .star:hover,  
+    .star.selected {  
+      color: gold;  
+    }  
+  
+    .feedback-item {  
+      text-align: left;  
+      border-top: 1px solid #e5e7eb;  
+      padding: 15px 0;  
+    }  
+  
+    small {  
+      color: #6b7280;  
+    }  
+  
+    footer {  
+      text-align: center;  
+      margin-top: 30px;  
+      font-size: 0.9rem;  
+      color: #6b7280;  
+    }  
+  </style>  
+  
+  <!-- reCAPTCHA v3 -->  
+  <script src="https://www.google.com/recaptcha/api.js?render=6Lft-pUrAAAAALokbwg3S8c27oJggzuHSnjlDoh4"></script>  
+  
+  <!-- Google AdSense -->  
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5310734846855331"  
+     crossorigin="anonymous"></script>  
+  
+  <!-- Übersetzungen -->  
+  <script>
     const translations = {
-      en: { title: "AdBlocker Feedback", subtitle: "Tell us what you think.", commentPlaceholder: "Your comment...", submit: "Submit Feedback", alert_missing: "Please provide rating and comment.", alert_thanks: "Thanks for your feedback!", alert_already: "Feedback already sent.", privacy: "Privacy Policy" },
-      de: { title: "AdBlocker Feedback", subtitle: "Sag uns deine Meinung.", commentPlaceholder: "Dein Kommentar...", submit: "Feedback senden", alert_missing: "Bitte Bewertung und Kommentar eingeben.", alert_thanks: "Danke für dein Feedback!", alert_already: "Feedback bereits gesendet.", privacy: "Datenschutz" },
-      es: { title: "Comentarios de AdBlocker", subtitle: "Dinos qué piensas.", commentPlaceholder: "Tu comentario...", submit: "Enviar comentario", alert_missing: "Por favor califica y comenta.", alert_thanks: "¡Gracias por tu comentario!", alert_already: "Ya enviaste comentarios.", privacy: "Política de privacidad" }
-      // weitere Sprachen hinzufügen ...
+      en: {
+        title: "Welcome to AdBlocker Feedback",
+        description: "Let us know what you think. Rate us and leave a comment below.",
+        placeholder: "Your comment...",
+        submit: "Submit Feedback",
+        recent: "Recent Feedback",
+        thankYou: "Thank you for your feedback!",
+        error: "Please provide both a rating and a comment.",
+        alreadySent: "You have already submitted feedback."
+      },
+      de: {
+        title: "Willkommen beim AdBlocker-Feedback",
+        description: "Sag uns, was du denkst. Gib eine Bewertung ab und hinterlasse einen Kommentar.",
+        placeholder: "Dein Kommentar...",
+        submit: "Feedback absenden",
+        recent: "Letztes Feedback",
+        thankYou: "Vielen Dank für dein Feedback!",
+        error: "Bitte Bewertung und Kommentar angeben.",
+        alreadySent: "Du hast bereits Feedback abgegeben."
+      },
+      fr: {
+        title: "Bienvenue sur les retours AdBlocker",
+        description: "Donnez-nous votre avis. Évaluez-nous et laissez un commentaire ci-dessous.",
+        placeholder: "Votre commentaire...",
+        submit: "Envoyer le retour",
+        recent: "Avis récents",
+        thankYou: "Merci pour votre retour !",
+        error: "Veuillez fournir une note et un commentaire.",
+        alreadySent: "Vous avez déjà envoyé un retour."
+      },
+      es: {
+        title: "Bienvenido a los comentarios de AdBlocker",
+        description: "Dinos qué piensas. Danos una calificación y deja un comentario.",
+        placeholder: "Tu comentario...",
+        submit: "Enviar comentario",
+        recent: "Comentarios recientes",
+        thankYou: "¡Gracias por tu comentario!",
+        error: "Por favor proporciona una calificación y un comentario.",
+        alreadySent: "Ya has enviado comentarios."
+      },
+      tr: {
+        title: "AdBlocker Geri Bildirimine Hoş Geldiniz",
+        description: "Ne düşündüğünüzü bize bildirin. Bizi değerlendirin ve yorum bırakın.",
+        placeholder: "Yorumunuz...",
+        submit: "Geri Bildirim Gönder",
+        recent: "Son Geri Bildirimler",
+        thankYou: "Geri bildiriminiz için teşekkür ederiz!",
+        error: "Lütfen puan ve yorum girin.",
+        alreadySent: "Zaten geri bildirim gönderdiniz."
+      },
+      ar: {
+        title: "مرحبًا بك في ملاحظات AdBlocker",
+        description: "أخبرنا برأيك. قيّمنا واترك تعليقًا أدناه.",
+        placeholder: "تعليقك...",
+        submit: "إرسال الملاحظات",
+        recent: "آخر التعليقات",
+        thankYou: "شكرًا لملاحظاتك!",
+        error: "يرجى تقديم تقييم وتعليق.",
+        alreadySent: "لقد قدمت ملاحظات بالفعل."
+      },
+      it: {
+        title: "Benvenuto nei Feedback di AdBlocker",
+        description: "Facci sapere cosa ne pensi. Valutaci e lascia un commento.",
+        placeholder: "Il tuo commento...",
+        submit: "Invia Feedback",
+        recent: "Feedback recenti",
+        thankYou: "Grazie per il tuo feedback!",
+        error: "Fornisci una valutazione e un commento.",
+        alreadySent: "Hai già inviato un feedback."
+      },
+      hi: {
+        title: "AdBlocker फीडबैक में आपका स्वागत है",
+        description: "हमें बताएं कि आप क्या सोचते हैं। हमें रेट करें और नीचे एक टिप्पणी छोड़ें।",
+        placeholder: "आपकी टिप्पणी...",
+        submit: "प्रतिक्रिया भेजें",
+        recent: "हाल की प्रतिक्रियाएं",
+        thankYou: "आपकी प्रतिक्रिया के लिए धन्यवाद!",
+        error: "कृपया रेटिंग और टिप्पणी दोनों दें।",
+        alreadySent: "आप पहले ही प्रतिक्रिया भेज चुके हैं।"
+      },
+      ru: {
+        title: "Добро пожаловать в отзывы AdBlocker",
+        description: "Сообщите нам, что вы думаете. Оцените нас и оставьте комментарий ниже.",
+        placeholder: "Ваш комментарий...",
+        submit: "Отправить отзыв",
+        recent: "Последние отзывы",
+        thankYou: "Спасибо за ваш отзыв!",
+        error: "Пожалуйста, укажите оценку и комментарий.",
+        alreadySent: "Вы уже оставили отзыв."
+      },
+      id: {
+        title: "Selamat datang di Umpan Balik AdBlocker",
+        description: "Beritahu kami pendapat Anda. Beri nilai dan tinggalkan komentar di bawah.",
+        placeholder: "Komentar Anda...",
+        submit: "Kirim Umpan Balik",
+        recent: "Umpan Balik Terbaru",
+        thankYou: "Terima kasih atas umpan balik Anda!",
+        error: "Harap berikan peringkat dan komentar.",
+        alreadySent: "Anda sudah mengirim umpan balik."
+      },
+      pl: {
+        title: "Witamy w opiniach o AdBlocker",
+        description: "Daj nam znać, co myślisz. Oceń nas i zostaw komentarz poniżej.",
+        placeholder: "Twój komentarz...",
+        submit: "Wyślij opinię",
+        recent: "Najnowsze opinie",
+        thankYou: "Dziękujemy za Twoją opinię!",
+        error: "Proszę podać ocenę i komentarz.",
+        alreadySent: "Już wysłałeś opinię."
+      },
+      zh: {
+        title: "欢迎使用 AdBlocker 反馈",
+        description: "告诉我们您的想法。给我们评分并留下评论。",
+        placeholder: "您的评论...",
+        submit: "提交反馈",
+        recent: "最新评论",
+        thankYou: "感谢您的反馈！",
+        error: "请提供评分和评论。",
+        alreadySent: "您已提交反馈。"
+      }
     };
-
-    const populateUI = () => {
-      const t = translations[selectedLang] || translations[defaultLang];
-      document.getElementById('title').innerText = t.title;
-      document.getElementById('subtitle').innerText = t.subtitle;
-      document.getElementById('comment').placeholder = t.commentPlaceholder;
-      document.getElementById('submitBtn').innerText = t.submit;
-      document.getElementById('privacy').innerText = t.privacy;
-      document.getElementById('privacy').href = `/${selectedLang}/privacy.html`;
-    };
-
-    document.querySelectorAll('.star').forEach(star => {
-      star.addEventListener('click', () => {
-        selectedRating = star.getAttribute('data-rating');
-        document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));
-        for (let i = 0; i < selectedRating; i++) {
-          document.querySelectorAll('.star')[i].classList.add('selected');
-        }
-      });
-    });
-
-    const submitFeedback = () => {
-      const t = translations[selectedLang] || translations[defaultLang];
-      const comment = document.getElementById('comment').value.trim();
-      if (localStorage.getItem("feedbackSent") === "true") return alert(t.alert_already);
-      if (!selectedRating || !comment) return alert(t.alert_missing);
-      db.collection("feedback").add({
-        rating: parseInt(selectedRating),
-        comment: comment,
-        lang: selectedLang,
-        timestamp: new Date()
-      }).then(() => {
-        alert(t.alert_thanks);
-        localStorage.setItem("feedbackSent", "true");
-        document.getElementById('comment').value = '';
-        selectedRating = 0;
-        document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));
-      });
-    };
-
-    const initLanguageSelector = () => {
-      const select = document.getElementById("languageSelect");
-      Object.keys(translations).forEach(lang => {
-        const opt = document.createElement("option");
-        opt.value = lang;
-        opt.innerText = lang.toUpperCase();
-        if (lang === selectedLang) opt.selected = true;
-        select.appendChild(opt);
-      });
-      select.addEventListener("change", e => {
-        selectedLang = e.target.value;
-        populateUI();
-      });
-    };
-
-    document.addEventListener("DOMContentLoaded", () => {
-      initLanguageSelector();
-      populateUI();
-    });
-  </script></body>
+  </script>  
+</head>  
+<body>  
+  <div class="container">  
+      
+    <!-- Werbung oben -->  
+    <ins class="adsbygoogle"  
+         style="display:block"  
+         data-ad-client="ca-pub-5310734846855331"  
+         data-ad-slot="4934458362"  
+         data-ad-format="auto"  
+         data-full-width-responsive="true"></ins>  
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>  
+  
+    <h1>Loading...</h1>  
+    <p>Loading...</p>  
+  
+    <div class="stars" id="rating">  
+      <span class="star" data-value="1">&#9733;</span>  
+      <span class="star" data-value="2">&#9733;</span>  
+      <span class="star" data-value="3">&#9733;</span>  
+      <span class="star" data-value="4">&#9733;</span>  
+      <span class="star" data-value="5">&#9733;</span>  
+    </div>  
+  
+    <textarea id="comment" rows="6" placeholder="Loading..."></textarea><br>  
+    <button onclick="submitFeedback()">Loading...</button>  
+  
+    <div id="feedback-list">  
+      <h2 style="margin-top: 2em;">Loading...</h2>  
+    </div>  
+  
+    <!-- Werbung unten -->  
+    <ins class="adsbygoogle"  
+         style="display:block"  
+         data-ad-client="ca-pub-5310734846855331"  
+         data-ad-slot="4934458362"  
+         data-ad-format="auto"  
+         data-full-width-responsive="true"></ins>  
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>  
+  </div>  
+  
+  <!-- Datenschutzerklärung ganz unten -->  
+  <footer>  
+    <a href="https://cyperking5.github.io/privacy.html" target="_blank" rel="noopener noreferrer">  
+      Privacy Policy  
+    </a>  
+  </footer>  
+  
+  <!-- Firebase Modular SDK -->  
+  <script type="module">  
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";  
+    import { getDatabase, ref, push, get, child } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";  
+  
+    const firebaseConfig = {  
+      apiKey: "AIzaSyCfS9qn-B8MZx8gHs7a_TiU8TY5LROeFCA",  
+      authDomain: "adblocker-feedback.firebaseapp.com",  
+      databaseURL: "https://adblocker-feedback-default-rtdb.europe-west1.firebasedatabase.app",  
+      projectId: "adblocker-feedback",  
+      storageBucket: "adblocker-feedback.appspot.com",  
+      messagingSenderId: "504023672779",  
+      appId: "1:504023672779:web:cf6a9fd51a8f870ae7384e",  
+      measurementId: "G-DHFRDS6E62"  
+    };  
+  
+    const app = initializeApp(firebaseConfig);  
+    const db = getDatabase(app);  
+  
+    let selectedRating = 0;  
+  
+    // Erkenne Browser-Sprache und setze Sprache (Fallback: en)  
+    const userLang = navigator.language.slice(0, 2).toLowerCase();  
+    const lang = translations[userLang] ? userLang : 'en';  
+  
+    // Bei Arabisch RTL setzen  
+    document.body.dir = (lang === "ar") ? "rtl" : "ltr";  
+  
+    // Texte setzen  
+    function setTexts() {  
+      document.querySelector('h1').textContent = translations[lang].title;  
+      document.querySelector('p').textContent = translations[lang].description;  
+      document.getElementById('comment').placeholder = translations[lang].placeholder;  
+      document.querySelector('button').textContent = translations[lang].submit;  
+      document.getElementById('feedback-list').firstElementChild.textContent = translations[lang].recent;  
+    }  
+  
+    setTexts();  
+  
+    // Sterne Klick-Handling  
+    document.querySelectorAll('.star').forEach(star => {  
+      star.addEventListener('click', function () {  
+        selectedRating = parseInt(this.getAttribute('data-value'));  
+        document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));  
+        for (let i = 0; i < selectedRating; i++) {  
+          document.querySelectorAll('.star')[i].classList.add('selected');  
+        }  
+      });  
+    });  
+  
+    window.submitFeedback = function () {  
+      const comment = document.getElementById('comment').value.trim();  
+  
+      if (localStorage.getItem("feedbackSent") === "true") {  
+        alert(translations[lang].alreadySent);  
+        return;  
+      }  
+  
+      if (selectedRating === 0 || comment === '') {  
+        alert(translations[lang].error);  
+        return;  
+      }  
+  
+      grecaptcha.ready(() => {  
+        grecaptcha.execute('6Lft-pUrAAAAALokbwg3S8c27oJggzuHSnjlDoh4', { action: 'submit_feedback' }).then(token => {  
+          push(ref(db, 'feedbacks'), {  
+            rating: selectedRating,  
+            comment: comment,  
+            created_at: new Date().toISOString(),  
+            recaptcha_token: token  
+          }).then(() => {  
+            localStorage.setItem("feedbackSent", "true");  
+            document.getElementById('comment').value = '';  
+            selectedRating = 0;  
+            document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));  
+            loadFeedback();  
+            alert(translations[lang].thankYou);  
+          });  
+        });  
+      });  
+    }  
+  
+    function loadFeedback() {  
+      get(child(ref(db), 'feedbacks')).then(snapshot => {  
+        const feedbackList = document.getElementById('feedback-list');  
+        feedbackList.innerHTML = `<h2 style="margin-top: 2em;">${translations[lang].recent}</h2>`;  
+        const data = snapshot.val();  
+        if (!data) return;  
+        Object.values(data).reverse().forEach(item => {  
+          const div = document.createElement('div');  
+          div.className = 'feedback-item';  
+          div.innerHTML = `  
+            <div class="stars">${'&#9733;'.repeat(item.rating)}${'&#9734;'.repeat(5 - item.rating)}</div>  
+            <div>${item.comment}</div>  
+            <small>${new Date(item.created_at).toLocaleString()}</small>  
+          `;  
+          feedbackList.appendChild(div);  
+        });  
+      });  
+    }  
+  
+    window.onload = loadFeedback;  
+  </script>  
+</body>  
 </html>
