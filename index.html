@@ -38,12 +38,22 @@
     window.addEventListener("resize", resizeCanvas);
     resizeCanvas();
 
-    let keys = {};
+    let keys = {
+      left: false,
+      right: false
+    };
     let touchX = null;
 
     // Input
-    window.addEventListener("keydown", e => keys[e.key] = true);
-    window.addEventListener("keyup", e => keys[e.key] = false);
+    window.addEventListener("keydown", e => {
+      if (e.key === "ArrowLeft" || e.key === "a") keys.left = true;
+      if (e.key === "ArrowRight" || e.key === "d") keys.right = true;
+    });
+    window.addEventListener("keyup", e => {
+      if (e.key === "ArrowLeft" || e.key === "a") keys.left = false;
+      if (e.key === "ArrowRight" || e.key === "d") keys.right = false;
+    });
+
     window.addEventListener("touchstart", e => touchX = e.touches[0].clientX);
     window.addEventListener("touchmove", e => touchX = e.touches[0].clientX);
     window.addEventListener("touchend", () => touchX = null);
@@ -51,7 +61,7 @@
     let player, speed, roadLines, enemies;
 
     function resetGame() {
-      player = { x: canvas.width / 2, y: canvas.height - 100, width: 40, height: 80, color: "lime" };
+      player = { x: canvas.width / 2 - 20, y: canvas.height - 100, width: 40, height: 80, color: "lime" };
       speed = 5;
       roadLines = [];
       for (let i = 0; i < 20; i++) {
@@ -75,8 +85,8 @@
         if (line.y > canvas.height) line.y = -100;
       });
 
-      if (keys["ArrowLeft"]) player.x -= speed;
-      if (keys["ArrowRight"]) player.x += speed;
+      if (keys.left) player.x -= speed;
+      if (keys.right) player.x += speed;
 
       if (touchX !== null) {
         if (touchX < player.x) player.x -= speed;
@@ -89,7 +99,7 @@
         enemy.y += speed;
         if (!enemy.passed && enemy.y > player.y + player.height) {
           enemy.passed = true;
-          speed += 0.5;
+          speed += 1; // Schneller beim Überholen
         }
       });
 
