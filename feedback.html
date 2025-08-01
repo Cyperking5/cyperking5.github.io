@@ -10,8 +10,8 @@
       margin: 0;
       padding: 40px 20px;
       display: flex;
-      justify-content: center;
-      align-items: flex-start;
+      flex-direction: column;
+      align-items: center;
       min-height: 100vh;
     }
 
@@ -88,6 +88,13 @@
     small {
       color: #6b7280;
     }
+
+    footer {
+      text-align: center;
+      margin-top: 30px;
+      font-size: 0.9rem;
+      color: #6b7280;
+    }
   </style>
 
   <!-- reCAPTCHA v3 -->
@@ -136,14 +143,14 @@
          data-full-width-responsive="true"></ins>
     <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
   </div>
-</div>
 
-<!-- Datenschutzerklärung außerhalb der Box -->
-    <div style="text-align: center; margin-top: 30px; font-size: 0.9rem; color: #6b7280;">
-  <a href="https://cyperking5.github.io/privacy.html" target="_blank" rel="noopener noreferrer">
-    Privacy Policy
-  </a>
-</div>
+  <!-- Datenschutzerklärung ganz unten -->
+  <footer>
+    <a href="https://cyperking5.github.io/privacy.html" target="_blank" rel="noopener noreferrer">
+      Privacy Policy
+    </a>
+  </footer>
+
   <!-- Firebase Modular SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
