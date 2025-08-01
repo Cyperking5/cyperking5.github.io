@@ -4,8 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Retro Racing Game</title>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5310734846855331" crossorigin="anonymous"></script>
-  <script async custom-element="amp-auto-ads" src="https://cdn.ampproject.org/v0/amp-auto-ads-0.1.js"></script>
   <style>
     * {
       margin: 0;
@@ -24,26 +22,15 @@
       margin: 0 auto;
       background: #222;
     }
-    #speedDisplay {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      color: lime;
-      font-size: 20px;
-      font-family: monospace;
-    }
   </style>
 </head>
 <body>
-  <div id="speedDisplay">Speed: 5</div>
   <canvas id="gameCanvas"></canvas>
 
   <script>
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
-    const speedDisplay = document.getElementById("speedDisplay");
 
-    // Resize for mobile and desktop
     function resizeCanvas() {
       canvas.width = window.innerWidth;
       canvas.height = window.innerHeight;
@@ -51,17 +38,30 @@
     window.addEventListener("resize", resizeCanvas);
     resizeCanvas();
 
-    // Game variables
-    let player = { x: canvas.width / 2, y: canvas.height - 100, width: 40, height: 80, color: "lime" };
-    let speed = 5;
     let keys = {};
+    let touchX = null;
 
-    let roadLines = [];
-    for (let i = 0; i < 20; i++) {
-      roadLines.push({ x: canvas.width / 2 - 5, y: i * 100, width: 10, height: 60 });
+    // Input
+    window.addEventListener("keydown", e => keys[e.key] = true);
+    window.addEventListener("keyup", e => keys[e.key] = false);
+    window.addEventListener("touchstart", e => touchX = e.touches[0].clientX);
+    window.addEventListener("touchmove", e => touchX = e.touches[0].clientX);
+    window.addEventListener("touchend", () => touchX = null);
+
+    let player, speed, roadLines, enemies;
+
+    function resetGame() {
+      player = { x: canvas.width / 2, y: canvas.height - 100, width: 40, height: 80, color: "lime" };
+      speed = 5;
+      roadLines = [];
+      for (let i = 0; i < 20; i++) {
+        roadLines.push({ x: canvas.width / 2 - 5, y: i * 100, width: 10, height: 60 });
+      }
+      enemies = [];
     }
 
-    let enemies = [];
+    resetGame();
+
     function spawnEnemy() {
       let x = Math.random() * (canvas.width - 40);
       enemies.push({ x, y: -100, width: 40, height: 80, color: "red", passed: false });
@@ -69,24 +69,12 @@
 
     setInterval(spawnEnemy, 1500);
 
-    // Input
-    window.addEventListener("keydown", e => keys[e.key] = true);
-    window.addEventListener("keyup", e => keys[e.key] = false);
-
-    // Mobile Controls
-    let touchX = null;
-    window.addEventListener("touchstart", e => touchX = e.touches[0].clientX);
-    window.addEventListener("touchmove", e => touchX = e.touches[0].clientX);
-    window.addEventListener("touchend", () => touchX = null);
-
     function update() {
-      // Move road lines
       roadLines.forEach(line => {
         line.y += speed;
         if (line.y > canvas.height) line.y = -100;
       });
 
-      // Move player
       if (keys["ArrowLeft"]) player.x -= speed;
       if (keys["ArrowRight"]) player.x += speed;
 
@@ -97,40 +85,37 @@
 
       player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
 
-      // Move enemies
       enemies.forEach(enemy => {
         enemy.y += speed;
-
-        // Check if enemy passed the player
         if (!enemy.passed && enemy.y > player.y + player.height) {
           enemy.passed = true;
-          speed += 0.5; // Increase speed each time an enemy passes
-          speedDisplay.textContent = `Speed: ${speed.toFixed(1)}`;
+          speed += 0.5;
         }
       });
 
-      // Collision
-      enemies = enemies.filter(enemy => {
+      for (let enemy of enemies) {
         const hit = !(player.x > enemy.x + enemy.width ||
                       player.x + player.width < enemy.x ||
                       player.y > enemy.y + enemy.height ||
                       player.y + player.height < enemy.y);
-        return !hit && enemy.y < canvas.height;
-      });
+        if (hit) {
+          resetGame();
+          return;
+        }
+      }
+
+      enemies = enemies.filter(enemy => enemy.y < canvas.height);
     }
 
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
 
-      // Draw road lines
       ctx.fillStyle = "white";
       roadLines.forEach(line => ctx.fillRect(line.x, line.y, line.width, line.height));
 
-      // Draw player
       ctx.fillStyle = player.color;
       ctx.fillRect(player.x, player.y, player.width, player.height);
 
-      // Draw enemies
       enemies.forEach(enemy => {
         ctx.fillStyle = enemy.color;
         ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
