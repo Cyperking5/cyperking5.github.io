@@ -1,10 +1,11 @@
-<!DOCTYPE html><html lang="en">
+<!DOCTYPE html>
+<html lang="en">
 <head>
-  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5310734846855331"
-     crossorigin="anonymous"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Retro Racing Game</title>
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5310734846855331" crossorigin="anonymous"></script>
+  <script async custom-element="amp-auto-ads" src="https://cdn.ampproject.org/v0/amp-auto-ads-0.1.js"></script>
   <style>
     * {
       margin: 0;
@@ -23,12 +24,26 @@
       margin: 0 auto;
       background: #222;
     }
+    #speedDisplay {
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      color: lime;
+      font-size: 20px;
+      font-family: monospace;
+    }
   </style>
 </head>
 <body>
-  <canvas id="gameCanvas"></canvas>  <script>
+  <amp-auto-ads type="adsense" data-ad-client="ca-pub-5310734846855331"></amp-auto-ads>
+
+  <div id="speedDisplay">Speed: 5</div>
+  <canvas id="gameCanvas"></canvas>
+
+  <script>
     const canvas = document.getElementById("gameCanvas");
     const ctx = canvas.getContext("2d");
+    const speedDisplay = document.getElementById("speedDisplay");
 
     // Resize for mobile and desktop
     function resizeCanvas() {
@@ -51,7 +66,7 @@
     let enemies = [];
     function spawnEnemy() {
       let x = Math.random() * (canvas.width - 40);
-      enemies.push({ x, y: -100, width: 40, height: 80, color: "red" });
+      enemies.push({ x, y: -100, width: 40, height: 80, color: "red", passed: false });
     }
 
     setInterval(spawnEnemy, 1500);
@@ -85,7 +100,16 @@
       player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
 
       // Move enemies
-      enemies.forEach(enemy => enemy.y += speed);
+      enemies.forEach(enemy => {
+        enemy.y += speed;
+
+        // Check if enemy passed the player
+        if (!enemy.passed && enemy.y > player.y + player.height) {
+          enemy.passed = true;
+          speed += 0.5; // Increase speed each time an enemy passes
+          speedDisplay.textContent = `Speed: ${speed.toFixed(1)}`;
+        }
+      });
 
       // Collision
       enemies = enemies.filter(enemy => {
@@ -122,5 +146,6 @@
     }
 
     loop();
-  </script></body>
+  </script>
+</body>
 </html>
