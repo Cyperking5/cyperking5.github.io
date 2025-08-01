@@ -1,136 +1,334 @@
-<!-- ab <script type="module"> unten ist das relevante Update -->
-<script type="module">
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
-  import { getDatabase, ref, push, get, child } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AdBlocker Feedback</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background-color: #f7f8fa;
+      margin: 0;
+      padding: 40px 20px;
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+      min-height: 100vh;
+    }
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyCfS9qn-B8MZx8gHs7a_TiU8TY5LROeFCA",
-    authDomain: "adblocker-feedback.firebaseapp.com",
-    databaseURL: "https://adblocker-feedback-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "adblocker-feedback",
-    storageBucket: "adblocker-feedback.appspot.com",
-    messagingSenderId: "504023672779",
-    appId: "1:504023672779:web:cf6a9fd51a8f870ae7384e",
-    measurementId: "G-DHFRDS6E62"
-  };
+    .container {
+      background: white;
+      max-width: 700px;
+      width: 100%;
+      padding: 30px;
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      text-align: center;
+    }
 
-  const app = initializeApp(firebaseConfig);
-  const db = getDatabase(app);
+    h1 {
+      margin-bottom: 0.5em;
+      color: #111827;
+    }
 
-  let selectedRating = 0;
+    p {
+      color: #4b5563;
+      margin-bottom: 1.5em;
+    }
 
-  document.querySelectorAll('.star').forEach(star => {
-    star.addEventListener('click', function () {
-      selectedRating = this.getAttribute('data-value');
-      document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));
-      for (let i = 0; i < selectedRating; i++) {
-        document.querySelectorAll('.star')[i].classList.add('selected');
-      }
+    textarea {
+      width: 100%;
+      padding: 12px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      resize: vertical;
+    }
+
+    button {
+      margin-top: 12px;
+      padding: 12px 24px;
+      background-color: #3b82f6;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #2563eb;
+    }
+
+    .stars {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 1em;
+    }
+
+    .star {
+      font-size: 2rem;
+      color: #d1d5db;
+      cursor: pointer;
+      transition: color 0.2s;
+    }
+
+    .star:hover,
+    .star.selected {
+      color: gold;
+    }
+
+    .feedback-item {
+      text-align: left;
+      border-top: 1px solid #e5e7eb;
+      padding: 15px 0;
+    }
+
+    small {
+      color: #6b7280;
+    }
+
+    .rating-summary {
+      display: flex;
+      flex-direction: row;
+      gap: 30px;
+      margin-top: 40px;
+      background-color: #1f2937;
+      color: #f9fafb;
+      padding: 20px;
+      border-radius: 16px;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .rating-score {
+      text-align: center;
+    }
+
+    .rating-score .score {
+      font-size: 3rem;
+      font-weight: bold;
+    }
+
+    .rating-score .count {
+      font-size: 0.9rem;
+      color: #9ca3af;
+    }
+
+    .rating-bars {
+      flex: 1;
+      min-width: 200px;
+    }
+
+    .rating-bar {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 6px;
+    }
+
+    .rating-bar .bar {
+      flex: 1;
+      height: 10px;
+      border-radius: 8px;
+      background-color: #374151;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .rating-bar .fill {
+      height: 100%;
+      background-color: #60a5fa;
+    }
+  </style>
+
+  <!-- reCAPTCHA v3 -->
+  <script src="https://www.google.com/recaptcha/api.js?render=6Lft-pUrAAAAALokbwg3S8c27oJggzuHSnjlDoh4"></script>
+
+  <!-- Google AdSense -->
+  <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5310734846855331"
+     crossorigin="anonymous"></script>
+</head>
+<body>
+  <div class="container">
+    <!-- Werbung oben -->
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-5310734846855331"
+         data-ad-slot="4934458362"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+
+    <h1>Welcome to AdBlocker Feedback</h1>
+    <p>Let us know what you think. Rate us and leave a comment below.</p>
+
+    <!-- Bewertungsauswertung -->
+    <div class="rating-summary" id="rating-summary">
+      <div class="rating-score">
+        <div id="avg-rating" class="score">0,0</div>
+        <div class="stars" id="avg-stars"></div>
+        <div id="total-ratings" class="count">0 Bewertungen</div>
+      </div>
+      <div class="rating-bars" id="rating-bars"></div>
+    </div>
+
+    <!-- Bewertungsabgabe -->
+    <div class="stars" id="rating">
+      <span class="star" data-value="1">&#9733;</span>
+      <span class="star" data-value="2">&#9733;</span>
+      <span class="star" data-value="3">&#9733;</span>
+      <span class="star" data-value="4">&#9733;</span>
+      <span class="star" data-value="5">&#9733;</span>
+    </div>
+
+    <textarea id="comment" rows="6" placeholder="Your comment..."></textarea><br>
+    <button onclick="submitFeedback()">Submit Feedback</button>
+
+    <div id="feedback-list">
+      <h2 style="margin-top: 2em;">Recent Feedback</h2>
+    </div>
+
+    <!-- Werbung unten -->
+    <ins class="adsbygoogle"
+         style="display:block"
+         data-ad-client="ca-pub-5310734846855331"
+         data-ad-slot="4934458362"
+         data-ad-format="auto"
+         data-full-width-responsive="true"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+
+  <!-- Firebase Modular SDK -->
+  <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+    import { getDatabase, ref, push, get, child } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyCfS9qn-B8MZx8gHs7a_TiU8TY5LROeFCA",
+      authDomain: "adblocker-feedback.firebaseapp.com",
+      databaseURL: "https://adblocker-feedback-default-rtdb.europe-west1.firebasedatabase.app",
+      projectId: "adblocker-feedback",
+      storageBucket: "adblocker-feedback.appspot.com",
+      messagingSenderId: "504023672779",
+      appId: "1:504023672779:web:cf6a9fd51a8f870ae7384e",
+      measurementId: "G-DHFRDS6E62"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    let selectedRating = 0;
+
+    document.querySelectorAll('.star').forEach(star => {
+      star.addEventListener('click', function () {
+        selectedRating = this.getAttribute('data-value');
+        document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));
+        for (let i = 0; i < selectedRating; i++) {
+          document.querySelectorAll('.star')[i].classList.add('selected');
+        }
+      });
     });
-  });
 
-  window.submitFeedback = function () {
-    const comment = document.getElementById('comment').value.trim();
+    window.submitFeedback = function () {
+      const comment = document.getElementById('comment').value.trim();
 
-    if (localStorage.getItem("feedbackSent") === "true") {
-      alert("Du hast bereits Feedback abgegeben.");
-      return;
-    }
+      if (localStorage.getItem("feedbackSent") === "true") {
+        alert("Du hast bereits Feedback abgegeben.");
+        return;
+      }
 
-    if (selectedRating === 0 || comment === '') {
-      alert('Bitte Bewertung und Kommentar angeben.');
-      return;
-    }
+      if (selectedRating === 0 || comment === '') {
+        alert('Bitte Bewertung und Kommentar angeben.');
+        return;
+      }
 
-    grecaptcha.ready(() => {
-      grecaptcha.execute('6Lft-pUrAAAAALokbwg3S8c27oJggzuHSnjlDoh4', { action: 'submit_feedback' }).then(token => {
-        push(ref(db, 'feedbacks'), {
-          rating: selectedRating,
-          comment: comment,
-          created_at: new Date().toISOString(),
-          recaptcha_token: token
-        }).then(() => {
-          localStorage.setItem("feedbackSent", "true");
-          document.getElementById('comment').value = '';
-          selectedRating = 0;
-          document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));
-          loadFeedback();
-          alert("Vielen Dank für dein Feedback!");
+      grecaptcha.ready(() => {
+        grecaptcha.execute('6Lft-pUrAAAAALokbwg3S8c27oJggzuHSnjlDoh4', { action: 'submit_feedback' }).then(token => {
+          push(ref(db, 'feedbacks'), {
+            rating: selectedRating,
+            comment: comment,
+            created_at: new Date().toISOString(),
+            recaptcha_token: token
+          }).then(() => {
+            localStorage.setItem("feedbackSent", "true");
+            document.getElementById('comment').value = '';
+            selectedRating = 0;
+            document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));
+            loadFeedback();
+            alert("Vielen Dank für dein Feedback!");
+          });
         });
       });
-    });
-  }
+    }
 
-  function loadFeedback() {
-    get(child(ref(db), 'feedbacks')).then(snapshot => {
-      const feedbackList = document.getElementById('feedback-list');
-      feedbackList.innerHTML = '<h2>Recent Feedback</h2>';
-      const data = snapshot.val();
-      if (!data) return;
+    function loadFeedback() {
+      get(child(ref(db), 'feedbacks')).then(snapshot => {
+        const feedbackList = document.getElementById('feedback-list');
+        feedbackList.innerHTML = '<h2>Recent Feedback</h2>';
+        const data = snapshot.val();
+        if (!data) return;
 
-      const ratings = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
-      let total = 0;
-      let sum = 0;
+        const ratings = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+        let total = 0;
+        let sum = 0;
 
-      Object.values(data).reverse().forEach(item => {
-        const r = parseInt(item.rating);
-        if (ratings[r] !== undefined) {
-          ratings[r]++;
-          total++;
-          sum += r;
-        }
+        Object.values(data).reverse().forEach(item => {
+          const r = parseInt(item.rating);
+          if (ratings[r] !== undefined) {
+            ratings[r]++;
+            total++;
+            sum += r;
+          }
 
-        const div = document.createElement('div');
-        div.className = 'feedback-item';
-        div.innerHTML = `
-          <div class="stars">${'★'.repeat(item.rating)}${'☆'.repeat(5 - item.rating)}</div>
-          <div>${item.comment}</div>
-          <small>${new Date(item.created_at).toLocaleString()}</small>
-        `;
-        feedbackList.appendChild(div);
+          const div = document.createElement('div');
+          div.className = 'feedback-item';
+          div.innerHTML = `
+            <div class="stars">${'★'.repeat(item.rating)}${'☆'.repeat(5 - item.rating)}</div>
+            <div>${item.comment}</div>
+            <small>${new Date(item.created_at).toLocaleString()}</small>
+          `;
+          feedbackList.appendChild(div);
+        });
+
+        updateRatingSummary(ratings, total, sum);
       });
-
-      updateRatingSummary(ratings, total, sum);
-    });
-  }
-
-  function updateRatingSummary(ratings, total, sum) {
-    const avg = total > 0 ? (sum / total) : 0;
-
-    document.getElementById('avg-rating').textContent = avg.toFixed(1).replace('.', ',');
-    document.getElementById('total-ratings').textContent = `${total.toLocaleString()} Bewertungen`;
-
-    const starsEl = document.getElementById('avg-stars');
-    starsEl.innerHTML = '';
-    const fullStars = Math.floor(avg);
-    const halfStar = avg - fullStars >= 0.5;
-    for (let i = 0; i < 5; i++) {
-      const star = document.createElement('span');
-      star.innerHTML = i < fullStars ? '★' : (i === fullStars && halfStar ? '⯨' : '☆');
-      star.style.color = '#fbbf24';
-      star.style.fontSize = '1.5rem';
-      starsEl.appendChild(star);
     }
 
-    const barsEl = document.getElementById('rating-bars');
-    barsEl.innerHTML = '';
-    const totalVotes = total || 1;
+    function updateRatingSummary(ratings, total, sum) {
+      const avg = total > 0 ? (sum / total) : 0;
 
-    for (let i = 5; i >= 1; i--) {
-      const count = ratings[i] || 0;
-      const percentage = (count / totalVotes) * 100;
+      document.getElementById('avg-rating').textContent = avg.toFixed(1).replace('.', ',');
+      document.getElementById('total-ratings').textContent = `${total.toLocaleString()} Bewertungen`;
 
-      const bar = document.createElement('div');
-      bar.className = 'rating-bar';
-      bar.innerHTML = `
-        <span>${i}</span>
-        <div class="bar">
-          <div class="fill" style="width: ${percentage}%; background-color: #60a5fa;"></div>
-        </div>
-      `;
-      barsEl.appendChild(bar);
+      const starsEl = document.getElementById('avg-stars');
+      starsEl.innerHTML = '';
+      const fullStars = Math.floor(avg);
+      const halfStar = avg - fullStars >= 0.5;
+      for (let i = 0; i < 5; i++) {
+        const star = document.createElement('span');
+        star.innerHTML = i < fullStars ? '★' : (i === fullStars && halfStar ? '⯨' : '☆');
+        star.style.color = '#fbbf24';
+        star.style.fontSize = '1.5rem';
+        starsEl.appendChild(star);
+      }
+
+      const barsEl = document.getElementById('rating-bars');
+      barsEl.innerHTML = '';
+      const max = Math.max(...Object.values(ratings)) || 1;
+      for (let i = 5; i >= 1; i--) {
+        const bar = document.createElement('div');
+        bar.className = 'rating-bar';
+        bar.innerHTML = `
+          <span>${i}</span>
+          <div class="bar"><div class="fill" style="width: ${(ratings[i] / max) * 100}%"></div></div>
+        `;
+        barsEl.appendChild(bar);
+      }
     }
-  }
 
-  window.onload = loadFeedback;
-          </script>
+    window.onload = loadFeedback;
+  </script>
+</body>
+</html>i
