@@ -1,255 +1,136 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>AdBlocker Feedback</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f3f4f6;
-      margin: 0;
-      padding: 0;
-      display: flex;
-      justify-content: center;
-    }
+<!-- ab <script type="module"> unten ist das relevante Update -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
+  import { getDatabase, ref, push, get, child } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
 
-    .container {
-      background: white;
-      max-width: 500px;
-      margin: 40px auto;
-      padding: 30px;
-      border-radius: 16px;
-      box-shadow: 0 0 20px rgba(0, 0, 0, 0.05);
-    }
+  const firebaseConfig = {
+    apiKey: "AIzaSyCfS9qn-B8MZx8gHs7a_TiU8TY5LROeFCA",
+    authDomain: "adblocker-feedback.firebaseapp.com",
+    databaseURL: "https://adblocker-feedback-default-rtdb.europe-west1.firebasedatabase.app",
+    projectId: "adblocker-feedback",
+    storageBucket: "adblocker-feedback.appspot.com",
+    messagingSenderId: "504023672779",
+    appId: "1:504023672779:web:cf6a9fd51a8f870ae7384e",
+    measurementId: "G-DHFRDS6E62"
+  };
 
-    .rating-summary {
-      display: flex;
-      flex-direction: row;
-      gap: 20px;
-      background-color: #1f2937;
-      color: #f9fafb;
-      padding: 20px;
-      border-radius: 16px;
-      justify-content: center;
-      align-items: center;
-      margin-bottom: 20px;
-    }
+  const app = initializeApp(firebaseConfig);
+  const db = getDatabase(app);
 
-    .rating-score {
-      text-align: center;
-    }
+  let selectedRating = 0;
 
-    .rating-score .score {
-      font-size: 2.5rem;
-      font-weight: bold;
-    }
-
-    .rating-score .count {
-      font-size: 0.9rem;
-      color: #9ca3af;
-    }
-
-    .stars span {
-      font-size: 1.5rem;
-      color: #fbbf24;
-    }
-
-    .half {
-      display: inline-block;
-      position: relative;
-      color: #fbbf24;
-      overflow: hidden;
-      width: 50%;
-    }
-
-    .half + span {
-      position: relative;
-      right: 50%;
-    }
-
-    .rating-bars {
-      flex: 1;
-      min-width: 160px;
-    }
-
-    .rating-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 5px;
-    }
-
-    .rating-bar .bar {
-      flex: 1;
-      height: 10px;
-      border-radius: 8px;
-      background-color: #374151;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .rating-bar .fill {
-      height: 100%;
-      background-color: #60a5fa;
-    }
-
-    h2 {
-      text-align: center;
-      margin-bottom: 10px;
-    }
-
-    textarea {
-      width: 100%;
-      height: 80px;
-      margin-top: 10px;
-      margin-bottom: 10px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      padding: 10px;
-      resize: none;
-    }
-
-    .feedback {
-      margin-top: 20px;
-    }
-
-    .feedback-item {
-      border-top: 1px solid #e5e7eb;
-      padding: 10px 0;
-    }
-
-    .feedback-item .stars {
-      margin-bottom: 4px;
-    }
-
-    .btn {
-      background-color: #3b82f6;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h2>Welcome to AdBlocker Feedback</h2>
-    <p style="text-align:center;">Let us know what you think. Rate us and leave a comment below.</p>
-
-    <!-- Bewertungsübersicht -->
-    <div class="rating-summary" id="rating-summary">
-      <div class="rating-score">
-        <div id="avg-rating" class="score">0,0</div>
-        <div class="stars" id="avg-stars"></div>
-        <div id="total-ratings" class="count">0 Bewertungen</div>
-      </div>
-      <div class="rating-bars" id="rating-bars"></div>
-    </div>
-
-    <!-- Kommentarbereich -->
-    <div style="text-align: center;">
-      <div class="stars" id="user-stars">
-        <span data-star="1">☆</span>
-        <span data-star="2">☆</span>
-        <span data-star="3">☆</span>
-        <span data-star="4">☆</span>
-        <span data-star="5">☆</span>
-      </div>
-      <textarea id="comment" placeholder="Your comment..."></textarea>
-      <button class="btn" onclick="submitFeedback()">Submit Feedback</button>
-    </div>
-
-    <!-- Feedback-Liste -->
-    <h3>Recent Feedback</h3>
-    <div class="feedback" id="feedback-list"></div>
-  </div>
-
-  <script>
-    const feedbackData = JSON.parse(localStorage.getItem('feedback') || '[]');
-
-    function renderStars(rating) {
-      let full = Math.floor(rating);
-      let half = rating - full >= 0.5;
-      let html = '';
-      for (let i = 0; i < 5; i++) {
-        if (i < full) {
-          html += '<span>★</span>';
-        } else if (i === full && half) {
-          html += '<span class="half">★</span><span style="color:#e5e7eb">★</span>';
-        } else {
-          html += '<span style="color:#e5e7eb">★</span>';
-        }
+  document.querySelectorAll('.star').forEach(star => {
+    star.addEventListener('click', function () {
+      selectedRating = this.getAttribute('data-value');
+      document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));
+      for (let i = 0; i < selectedRating; i++) {
+        document.querySelectorAll('.star')[i].classList.add('selected');
       }
-      return html;
+    });
+  });
+
+  window.submitFeedback = function () {
+    const comment = document.getElementById('comment').value.trim();
+
+    if (localStorage.getItem("feedbackSent") === "true") {
+      alert("Du hast bereits Feedback abgegeben.");
+      return;
     }
 
-    function updateRatingSummary() {
-      const counts = {1:0, 2:0, 3:0, 4:0, 5:0};
-      let total = feedbackData.length;
+    if (selectedRating === 0 || comment === '') {
+      alert('Bitte Bewertung und Kommentar angeben.');
+      return;
+    }
+
+    grecaptcha.ready(() => {
+      grecaptcha.execute('6Lft-pUrAAAAALokbwg3S8c27oJggzuHSnjlDoh4', { action: 'submit_feedback' }).then(token => {
+        push(ref(db, 'feedbacks'), {
+          rating: selectedRating,
+          comment: comment,
+          created_at: new Date().toISOString(),
+          recaptcha_token: token
+        }).then(() => {
+          localStorage.setItem("feedbackSent", "true");
+          document.getElementById('comment').value = '';
+          selectedRating = 0;
+          document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));
+          loadFeedback();
+          alert("Vielen Dank für dein Feedback!");
+        });
+      });
+    });
+  }
+
+  function loadFeedback() {
+    get(child(ref(db), 'feedbacks')).then(snapshot => {
+      const feedbackList = document.getElementById('feedback-list');
+      feedbackList.innerHTML = '<h2>Recent Feedback</h2>';
+      const data = snapshot.val();
+      if (!data) return;
+
+      const ratings = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+      let total = 0;
       let sum = 0;
 
-      feedbackData.forEach(f => {
-        counts[f.rating]++;
-        sum += f.rating;
+      Object.values(data).reverse().forEach(item => {
+        const r = parseInt(item.rating);
+        if (ratings[r] !== undefined) {
+          ratings[r]++;
+          total++;
+          sum += r;
+        }
+
+        const div = document.createElement('div');
+        div.className = 'feedback-item';
+        div.innerHTML = `
+          <div class="stars">${'★'.repeat(item.rating)}${'☆'.repeat(5 - item.rating)}</div>
+          <div>${item.comment}</div>
+          <small>${new Date(item.created_at).toLocaleString()}</small>
+        `;
+        feedbackList.appendChild(div);
       });
 
-      const avg = total > 0 ? sum / total : 0;
-      document.getElementById("avg-rating").innerText = avg.toFixed(1).replace('.', ',');
-      document.getElementById("total-ratings").innerText = `${total} Bewertungen`;
-      document.getElementById("avg-stars").innerHTML = renderStars(avg);
-
-      const bars = document.getElementById("rating-bars");
-      bars.innerHTML = '';
-      const max = Math.max(...Object.values(counts));
-      for (let i = 5; i >= 1; i--) {
-        let percent = total ? (counts[i] / max) * 100 : 0;
-        bars.innerHTML += `
-          <div class="rating-bar">
-            <span>${i}</span>
-            <div class="bar"><div class="fill" style="width:${percent}%"></div></div>
-          </div>`;
-      }
-    }
-
-    function loadFeedback() {
-      const list = document.getElementById("feedback-list");
-      list.innerHTML = '';
-      feedbackData.slice().reverse().forEach(f => {
-        const time = new Date(f.time).toLocaleString();
-        list.innerHTML += `
-          <div class="feedback-item">
-            <div class="stars">${renderStars(f.rating)}</div>
-            <div>${f.comment}</div>
-            <small>${time}</small>
-          </div>`;
-      });
-      updateRatingSummary();
-    }
-
-    let selectedRating = 0;
-    document.querySelectorAll('#user-stars span').forEach(span => {
-      span.onclick = () => {
-        selectedRating = parseInt(span.dataset.star);
-        document.querySelectorAll('#user-stars span').forEach(s => {
-          s.textContent = parseInt(s.dataset.star) <= selectedRating ? '★' : '☆';
-        });
-      };
+      updateRatingSummary(ratings, total, sum);
     });
+  }
 
-    function submitFeedback() {
-      const comment = document.getElementById("comment").value.trim();
-      if (selectedRating === 0 || !comment) return alert("Bitte Sterne und Kommentar angeben!");
-      feedbackData.push({ rating: selectedRating, comment, time: Date.now() });
-      localStorage.setItem("feedback", JSON.stringify(feedbackData));
-      document.getElementById("comment").value = '';
-      selectedRating = 0;
-      document.querySelectorAll('#user-stars span').forEach(s => s.textContent = '☆');
-      loadFeedback();
+  function updateRatingSummary(ratings, total, sum) {
+    const avg = total > 0 ? (sum / total) : 0;
+
+    document.getElementById('avg-rating').textContent = avg.toFixed(1).replace('.', ',');
+    document.getElementById('total-ratings').textContent = `${total.toLocaleString()} Bewertungen`;
+
+    const starsEl = document.getElementById('avg-stars');
+    starsEl.innerHTML = '';
+    const fullStars = Math.floor(avg);
+    const halfStar = avg - fullStars >= 0.5;
+    for (let i = 0; i < 5; i++) {
+      const star = document.createElement('span');
+      star.innerHTML = i < fullStars ? '★' : (i === fullStars && halfStar ? '⯨' : '☆');
+      star.style.color = '#fbbf24';
+      star.style.fontSize = '1.5rem';
+      starsEl.appendChild(star);
     }
 
-    loadFeedback();
-  </script>
-</body>
-</html>
+    const barsEl = document.getElementById('rating-bars');
+    barsEl.innerHTML = '';
+    const totalVotes = total || 1;
+
+    for (let i = 5; i >= 1; i--) {
+      const count = ratings[i] || 0;
+      const percentage = (count / totalVotes) * 100;
+
+      const bar = document.createElement('div');
+      bar.className = 'rating-bar';
+      bar.innerHTML = `
+        <span>${i}</span>
+        <div class="bar">
+          <div class="fill" style="width: ${percentage}%; background-color: #60a5fa;"></div>
+        </div>
+      `;
+      barsEl.appendChild(bar);
+    }
+  }
+
+  window.onload = loadFeedback;
+          </script>
