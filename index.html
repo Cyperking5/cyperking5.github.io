@@ -1,84 +1,126 @@
-<!DOCTYPE html>
-<html lang="de">
+<!DOCTYPE html><html lang="en">
 <head>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5310734846855331"
      crossorigin="anonymous"></script>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Cyperking5</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Retro Racing Game</title>
   <style>
-    body {
+    * {
       margin: 0;
-      background-color: #000;
-      font-family: 'Orbitron', sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 100vh;
-      color: #00fff7;
+      padding: 0;
+      box-sizing: border-box;
     }
-
-    h1 {
-      font-size: 2.5em;
-      text-shadow: 0 0 10px #00fff7, 0 0 20px #00fff7;
-      margin-bottom: 20px;
+    html, body {
+      width: 100%;
+      height: 100%;
+      background: black;
+      overflow: hidden;
+      font-family: sans-serif;
     }
-
-    .game-box {
-      position: relative;
-      width: 300px;
-      height: 200px;
-      border: 2px solid #00fff7;
-      box-shadow: 0 0 20px #00fff7;
-      background-color: #111;
+    canvas {
+      display: block;
+      margin: 0 auto;
+      background: #222;
     }
-
-    .paddle {
-      position: absolute;
-      width: 6px;
-      height: 30px;
-      background-color: #00fff7;
-    }
-
-    .paddle.left {
-      left: 0;
-      top: 40%;
-    }
-
-    .paddle.right {
-      right: 0;
-      top: 40%;
-    }
-
-    .ball {
-      position: absolute;
-      top: 45%;
-      left: 50%;
-      width: 8px;
-      height: 8px;
-      background-color: #00fff7;
-      border-radius: 50%;
-      animation: bounce 2s linear infinite;
-    }
-
-    @keyframes bounce {
-      0%   { top: 10%; left: 10%; }
-      25%  { top: 80%; left: 20%; }
-      50%  { top: 20%; left: 80%; }
-      75%  { top: 60%; left: 60%; }
-      100% { top: 10%; left: 10%; }
-    }
-
-    @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap');
   </style>
 </head>
 <body>
-  <h1>Cyperking5</h1>
-  <div class="game-box">
-    <div class="paddle left"></div>
-    <div class="paddle right"></div>
-    <div class="ball"></div>
-  </div>
-</body>
+  <canvas id="gameCanvas"></canvas>  <script>
+    const canvas = document.getElementById("gameCanvas");
+    const ctx = canvas.getContext("2d");
+
+    // Resize for mobile and desktop
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener("resize", resizeCanvas);
+    resizeCanvas();
+
+    // Game variables
+    let player = { x: canvas.width / 2, y: canvas.height - 100, width: 40, height: 80, color: "lime" };
+    let speed = 5;
+    let keys = {};
+
+    let roadLines = [];
+    for (let i = 0; i < 20; i++) {
+      roadLines.push({ x: canvas.width / 2 - 5, y: i * 100, width: 10, height: 60 });
+    }
+
+    let enemies = [];
+    function spawnEnemy() {
+      let x = Math.random() * (canvas.width - 40);
+      enemies.push({ x, y: -100, width: 40, height: 80, color: "red" });
+    }
+
+    setInterval(spawnEnemy, 1500);
+
+    // Input
+    window.addEventListener("keydown", e => keys[e.key] = true);
+    window.addEventListener("keyup", e => keys[e.key] = false);
+
+    // Mobile Controls
+    let touchX = null;
+    window.addEventListener("touchstart", e => touchX = e.touches[0].clientX);
+    window.addEventListener("touchmove", e => touchX = e.touches[0].clientX);
+    window.addEventListener("touchend", () => touchX = null);
+
+    function update() {
+      // Move road lines
+      roadLines.forEach(line => {
+        line.y += speed;
+        if (line.y > canvas.height) line.y = -100;
+      });
+
+      // Move player
+      if (keys["ArrowLeft"]) player.x -= speed;
+      if (keys["ArrowRight"]) player.x += speed;
+
+      if (touchX !== null) {
+        if (touchX < player.x) player.x -= speed;
+        else if (touchX > player.x + player.width) player.x += speed;
+      }
+
+      player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
+
+      // Move enemies
+      enemies.forEach(enemy => enemy.y += speed);
+
+      // Collision
+      enemies = enemies.filter(enemy => {
+        const hit = !(player.x > enemy.x + enemy.width ||
+                      player.x + player.width < enemy.x ||
+                      player.y > enemy.y + enemy.height ||
+                      player.y + player.height < enemy.y);
+        return !hit && enemy.y < canvas.height;
+      });
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw road lines
+      ctx.fillStyle = "white";
+      roadLines.forEach(line => ctx.fillRect(line.x, line.y, line.width, line.height));
+
+      // Draw player
+      ctx.fillStyle = player.color;
+      ctx.fillRect(player.x, player.y, player.width, player.height);
+
+      // Draw enemies
+      enemies.forEach(enemy => {
+        ctx.fillStyle = enemy.color;
+        ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+      });
+    }
+
+    function loop() {
+      update();
+      draw();
+      requestAnimationFrame(loop);
+    }
+
+    loop();
+  </script></body>
 </html>
