@@ -1,0 +1,127 @@
+<!DOCTYPE html><html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AdBlocker Feedback</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 600px;
+      margin: auto;
+      padding: 20px;
+      background: #f4f4f4;
+    }
+    h1 { margin-top: 0; }
+    textarea {
+      width: 100%;
+      height: 100px;
+    }
+    .stars span {
+      font-size: 24px;
+      cursor: pointer;
+    }
+    .selected { color: gold; }
+    .lang-selector {
+      float: right;
+      margin-top: -50px;
+    }
+    .lang-selector select {
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+  <div class="lang-selector">
+    🌐 <select id="languageSelect"></select>
+  </div>  <h1 id="title"></h1>
+  <p id="subtitle"></p>  <div class="stars">
+    <span class="star" data-rating="1">★</span>
+    <span class="star" data-rating="2">★</span>
+    <span class="star" data-rating="3">★</span>
+    <span class="star" data-rating="4">★</span>
+    <span class="star" data-rating="5">★</span>
+  </div>  <textarea id="comment" placeholder=""></textarea><br><br><button onclick="submitFeedback()" id="submitBtn"></button> <br><br> <a href="#" id="privacy"></a>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js"></script>  <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js"></script>  <script>
+    const firebaseConfig = {
+      apiKey: "DEINE_API_KEY",
+      authDomain: "DEIN_PROJECT.firebaseapp.com",
+      projectId: "DEIN_PROJECT",
+      storageBucket: "DEIN_PROJECT.appspot.com",
+      messagingSenderId: "SENDER_ID",
+      appId: "APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+
+    const defaultLang = 'en';
+    let selectedLang = navigator.language.slice(0, 2) || defaultLang;
+    let selectedRating = 0;
+
+    const translations = {
+      en: { title: "AdBlocker Feedback", subtitle: "Tell us what you think.", commentPlaceholder: "Your comment...", submit: "Submit Feedback", alert_missing: "Please provide rating and comment.", alert_thanks: "Thanks for your feedback!", alert_already: "Feedback already sent.", privacy: "Privacy Policy" },
+      de: { title: "AdBlocker Feedback", subtitle: "Sag uns deine Meinung.", commentPlaceholder: "Dein Kommentar...", submit: "Feedback senden", alert_missing: "Bitte Bewertung und Kommentar eingeben.", alert_thanks: "Danke für dein Feedback!", alert_already: "Feedback bereits gesendet.", privacy: "Datenschutz" },
+      es: { title: "Comentarios de AdBlocker", subtitle: "Dinos qué piensas.", commentPlaceholder: "Tu comentario...", submit: "Enviar comentario", alert_missing: "Por favor califica y comenta.", alert_thanks: "¡Gracias por tu comentario!", alert_already: "Ya enviaste comentarios.", privacy: "Política de privacidad" }
+      // weitere Sprachen hinzufügen ...
+    };
+
+    const populateUI = () => {
+      const t = translations[selectedLang] || translations[defaultLang];
+      document.getElementById('title').innerText = t.title;
+      document.getElementById('subtitle').innerText = t.subtitle;
+      document.getElementById('comment').placeholder = t.commentPlaceholder;
+      document.getElementById('submitBtn').innerText = t.submit;
+      document.getElementById('privacy').innerText = t.privacy;
+      document.getElementById('privacy').href = `/${selectedLang}/privacy.html`;
+    };
+
+    document.querySelectorAll('.star').forEach(star => {
+      star.addEventListener('click', () => {
+        selectedRating = star.getAttribute('data-rating');
+        document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));
+        for (let i = 0; i < selectedRating; i++) {
+          document.querySelectorAll('.star')[i].classList.add('selected');
+        }
+      });
+    });
+
+    const submitFeedback = () => {
+      const t = translations[selectedLang] || translations[defaultLang];
+      const comment = document.getElementById('comment').value.trim();
+      if (localStorage.getItem("feedbackSent") === "true") return alert(t.alert_already);
+      if (!selectedRating || !comment) return alert(t.alert_missing);
+      db.collection("feedback").add({
+        rating: parseInt(selectedRating),
+        comment: comment,
+        lang: selectedLang,
+        timestamp: new Date()
+      }).then(() => {
+        alert(t.alert_thanks);
+        localStorage.setItem("feedbackSent", "true");
+        document.getElementById('comment').value = '';
+        selectedRating = 0;
+        document.querySelectorAll('.star').forEach(s => s.classList.remove('selected'));
+      });
+    };
+
+    const initLanguageSelector = () => {
+      const select = document.getElementById("languageSelect");
+      Object.keys(translations).forEach(lang => {
+        const opt = document.createElement("option");
+        opt.value = lang;
+        opt.innerText = lang.toUpperCase();
+        if (lang === selectedLang) opt.selected = true;
+        select.appendChild(opt);
+      });
+      select.addEventListener("change", e => {
+        selectedLang = e.target.value;
+        populateUI();
+      });
+    };
+
+    document.addEventListener("DOMContentLoaded", () => {
+      initLanguageSelector();
+      populateUI();
+    });
+  </script></body>
+</html>
