@@ -6,7 +6,7 @@
   <style>
     body {
       font-family: "Segoe UI", sans-serif;
-      background-color: #f7f8fa;
+      background-color: #d60000; /* Neuer roter Hintergrund */
       margin: 0;
       padding: 40px 20px;
       display: flex;
@@ -106,13 +106,9 @@
     }
   </style>
 
-  <!-- reCAPTCHA v3 -->
   <script src="https://www.google.com/recaptcha/api.js?render=6Lft-pUrAAAAALokbwg3S8c27oJggzuHSnjlDoh4"></script>
-
-  <!-- Google AdSense -->
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5310734846855331" crossorigin="anonymous"></script>
 
-  <!-- Übersetzungen -->
   <script>
     const translations = {
       en: {
@@ -135,14 +131,13 @@
         error: "Bitte Bewertung und Kommentar angeben.",
         alreadySent: "Du hast bereits Feedback abgegeben."
       }
-      // Weitere Sprachen wie zuvor…
     };
   </script>
 </head>
 <body>
 
-  <!-- ICON OBEN RECHTS -->
-  <img src="icon.png" alt="AdBlocker Icon" class="top-left-icon" width="64" height="64" />
+  <!-- Icon oben rechts -->
+  <img src="icon.png" alt="AdBlocker Icon" class="top-right-icon" width="64" height="64" />
 
   <div class="container">
 
@@ -190,7 +185,6 @@
     </a>
   </footer>
 
-  <!-- Firebase Modular SDK -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
     import { getDatabase, ref, push, get, child } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
