@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>AdBlocker Feedback</title>
+  <title>REDGUARD Feedback</title>
   <style>
     body {
       font-family: "Segoe UI", sans-serif;
-      background-color: #d60000; /* Neuer roter Hintergrund */
+      background-color: #d60000;
       margin: 0;
       padding: 40px 20px;
       display: flex;
@@ -16,13 +16,30 @@
       direction: ltr;
     }
 
-    .top-right-icon {
+    /* HEADER (Icon + Titel links oben) */
+    .header {
       position: absolute;
       top: 20px;
-      right: 20px;
+      left: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
       z-index: 999;
     }
 
+    .header-icon {
+      width: 64px;
+      height: 64px;
+    }
+
+    .header-title {
+      font-size: 2rem;
+      font-weight: bold;
+      color: white;
+      font-family: "Segoe UI", sans-serif;
+    }
+
+    /* CONTAINER */
     .container {
       background: white;
       max-width: 600px;
@@ -106,9 +123,11 @@
     }
   </style>
 
+  <!-- Google Scripts -->
   <script src="https://www.google.com/recaptcha/api.js?render=6Lft-pUrAAAAALokbwg3S8c27oJggzuHSnjlDoh4"></script>
   <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-5310734846855331" crossorigin="anonymous"></script>
 
+  <!-- Übersetzungen -->
   <script>
     const translations = {
       en: {
@@ -134,11 +153,16 @@
     };
   </script>
 </head>
+
 <body>
 
-  <!-- Icon oben rechts -->
-  <img src="icon.png" alt="AdBlocker Icon" class="top-right-icon" width="64" height="64" />
+  <!-- HEADER (Icon + Titel) -->
+  <div class="header">
+    <img src="icon.png" alt="RedGuard Icon" class="header-icon">
+    <span class="header-title">REDGUARD</span>
+  </div>
 
+  <!-- CONTAINER -->
   <div class="container">
 
     <!-- Werbung oben -->
@@ -185,6 +209,7 @@
     </a>
   </footer>
 
+  <!-- Firebase & Funktionen -->
   <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-app.js";
     import { getDatabase, ref, push, get, child } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-database.js";
@@ -202,7 +227,6 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-
     let selectedRating = 0;
 
     const userLang = navigator.language.slice(0, 2).toLowerCase();
