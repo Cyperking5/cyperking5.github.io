@@ -1,144 +1,97 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="de">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Retro Racing Game</title>
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-    html, body {
-      width: 100%;
-      height: 100%;
-      background: black;
-      overflow: hidden;
-      font-family: sans-serif;
-    }
-    canvas {
-      display: block;
-      margin: 0 auto;
-      background: #222;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="Lerne alles über Android App Entwicklung – Tutorials, Tools, Tipps und Ressourcen für Entwickler aller Erfahrungsstufen." />
+  <title>Android App Entwicklung | Dein Leitfaden für mobile Entwicklung</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
-  <canvas id="gameCanvas"></canvas>
+  <header>
+    <h1>Android App Entwicklung</h1>
+    <nav>
+      <ul>
+        <li><a href="#start">Start</a></li>
+        <li><a href="#tutorials">Tutorials</a></li>
+        <li><a href="#tools">Tools</a></li>
+        <li><a href="#ressourcen">Ressourcen</a></li>
+        <li><a href="#kontakt">Kontakt</a></li>
+      </ul>
+    </nav>
+  </header>
 
-  <script>
-    const canvas = document.getElementById("gameCanvas");
-    const ctx = canvas.getContext("2d");
+  <section id="start">
+    <h2>Willkommen bei AndroidDevPro</h2>
+    <p>
+      Willkommen auf <strong>AndroidDevPro</strong> – deinem professionellen Portal für moderne Android App Entwicklung.
+      Egal ob du gerade erst anfängst oder bereits Erfahrung hast – hier findest du hochwertige Inhalte, um deine App-Projekte erfolgreich umzusetzen.
+      Unsere Tutorials, Tools und Ressourcen sind so aufgebaut, dass sie dir helfen, effizienter und sicherer zu entwickeln.
+    </p>
+  </section>
 
-    function resizeCanvas() {
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-    }
-    window.addEventListener("resize", resizeCanvas);
-    resizeCanvas();
+  <section id="tutorials">
+    <h2>Schritt-für-Schritt Tutorials</h2>
 
-    let keys = {
-      left: false,
-      right: false
-    };
-    let touchX = null;
+    <h3>Anfänger</h3>
+    <ul>
+      <li><strong>Android Studio Installation:</strong> Lerne, wie du Android Studio einrichtest und dein erstes Projekt startest.</li>
+      <li><strong>Hello World App:</strong> Ein einfaches Tutorial, um deine erste App zum Laufen zu bringen.</li>
+      <li><strong>Layouts mit XML & Compose:</strong> Einführung in Benutzeroberflächen mit zwei Methoden.</li>
+      <li><strong>Grundlagen Kotlin:</strong> Was du als Android-Entwickler über Kotlin wissen musst.</li>
+    </ul>
 
-    // Input
-    window.addEventListener("keydown", e => {
-      if (e.key === "ArrowLeft" || e.key === "a") keys.left = true;
-      if (e.key === "ArrowRight" || e.key === "d") keys.right = true;
-    });
-    window.addEventListener("keyup", e => {
-      if (e.key === "ArrowLeft" || e.key === "a") keys.left = false;
-      if (e.key === "ArrowRight" || e.key === "d") keys.right = false;
-    });
+    <h3>Fortgeschritten</h3>
+    <ul>
+      <li><strong>Navigation Component:</strong> Baue moderne Navigationsstrukturen mit Jetpack.</li>
+      <li><strong>Datenbank mit Room:</strong> Einführung in lokale Speicherung und ORM.</li>
+      <li><strong>MVVM Architektur:</strong> Trenne deine App logisch und wartbar.</li>
+    </ul>
 
-    window.addEventListener("touchstart", e => touchX = e.touches[0].clientX);
-    window.addEventListener("touchmove", e => touchX = e.touches[0].clientX);
-    window.addEventListener("touchend", () => touchX = null);
+    <h3>Monetarisierung</h3>
+    <ul>
+      <li><strong>AdMob Integration:</strong> Banner und Interstitial Ads richtig einbinden.</li>
+      <li><strong>In-App-Käufe:</strong> Einführung in Google Play Billing.</li>
+    </ul>
 
-    let player, speed, roadLines, enemies;
+    <h3>App Veröffentlichen</h3>
+    <ul>
+      <li><strong>APK vs. AAB:</strong> Unterschiede und was Google verlangt.</li>
+      <li><strong>Google Play Store:</strong> Schritt-für-Schritt Anleitung zur App-Veröffentlichung.</li>
+    </ul>
+  </section>
 
-    function resetGame() {
-      player = { x: canvas.width / 2 - 20, y: canvas.height - 100, width: 40, height: 80, color: "lime" };
-      speed = 5;
-      roadLines = [];
-      for (let i = 0; i < 20; i++) {
-        roadLines.push({ x: canvas.width / 2 - 5, y: i * 100, width: 10, height: 60 });
-      }
-      enemies = [];
-    }
+  <section id="tools">
+    <h2>Top Tools für Android Entwickler</h2>
+    <ul>
+      <li><strong>Android Studio:</strong> Die offizielle IDE für Android mit integriertem Emulator.</li>
+      <li><strong>Firebase:</strong> Tools für Authentifizierung, Datenbanken, Crash Reporting und mehr.</li>
+      <li><strong>GitHub:</strong> Versionsverwaltung und Open-Source-Beiträge.</li>
+      <li><strong>Emulatoren:</strong> Teste deine App auf verschiedenen Geräten virtuell.</li>
+      <li><strong>Design Tools:</strong> Nutze Figma oder Material Design Guidelines zur UI-Gestaltung.</li>
+    </ul>
+  </section>
 
-    resetGame();
+  <section id="ressourcen">
+    <h2>Ressourcen & Tipps</h2>
+    <ul>
+      <li><strong>Clean Code:</strong> Lerne, wie du wartbaren und lesbaren Code schreibst.</li>
+      <li><strong>Best Practices:</strong> Tipps zur Architektur, Performance und Sicherheit.</li>
+      <li><strong>Google Play Richtlinien:</strong> Was du unbedingt beachten musst, um genehmigt zu werden.</li>
+      <li><strong>Checklisten:</strong> Vorbereitung auf das Play Store Review.</li>
+      <li><strong>Open Source Projekte:</strong> Sieh dir reale App-Projekte zum Lernen an.</li>
+    </ul>
+  </section>
 
-    function spawnEnemy() {
-      let x = Math.random() * (canvas.width - 40);
-      enemies.push({ x, y: -100, width: 40, height: 80, color: "red", passed: false });
-    }
+  <section id="kontakt">
+    <h2>Kontakt</h2>
+    <p>Du hast Fragen oder möchtest mitmachen? Schreib uns eine E-Mail: <a href="mailto:kontakt@androiddevpro.de">kontakt@androiddevpro.de</a></p>
+    <p>Folge uns auch auf GitHub und bleib auf dem neuesten Stand.</p>
+  </section>
 
-    setInterval(spawnEnemy, 1500);
-
-    function update() {
-      roadLines.forEach(line => {
-        line.y += speed;
-        if (line.y > canvas.height) line.y = -100;
-      });
-
-      if (keys.left) player.x -= speed;
-      if (keys.right) player.x += speed;
-
-      if (touchX !== null) {
-        if (touchX < player.x) player.x -= speed;
-        else if (touchX > player.x + player.width) player.x += speed;
-      }
-
-      player.x = Math.max(0, Math.min(canvas.width - player.width, player.x));
-
-      enemies.forEach(enemy => {
-        enemy.y += speed;
-        if (!enemy.passed && enemy.y > player.y + player.height) {
-          enemy.passed = true;
-          speed += 1; // Schneller beim Überholen
-        }
-      });
-
-      for (let enemy of enemies) {
-        const hit = !(player.x > enemy.x + enemy.width ||
-                      player.x + player.width < enemy.x ||
-                      player.y > enemy.y + enemy.height ||
-                      player.y + player.height < enemy.y);
-        if (hit) {
-          resetGame();
-          return;
-        }
-      }
-
-      enemies = enemies.filter(enemy => enemy.y < canvas.height);
-    }
-
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-      ctx.fillStyle = "white";
-      roadLines.forEach(line => ctx.fillRect(line.x, line.y, line.width, line.height));
-
-      ctx.fillStyle = player.color;
-      ctx.fillRect(player.x, player.y, player.width, player.height);
-
-      enemies.forEach(enemy => {
-        ctx.fillStyle = enemy.color;
-        ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
-      });
-    }
-
-    function loop() {
-      update();
-      draw();
-      requestAnimationFrame(loop);
-    }
-
-    loop();
-  </script>
+  <footer>
+    <p>© 2025 AndroidDevPro. Alle Rechte vorbehalten.</p>
+    <p><a href="datenschutzerklaerung.html">Datenschutzerklärung</a> | <a href="impressum.html">Impressum</a></p>
+  </footer>
 </body>
 </html>
